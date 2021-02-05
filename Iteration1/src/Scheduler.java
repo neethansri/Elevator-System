@@ -2,27 +2,26 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Scheduler implements Runnable {
-	private boolean flag = true;
-	private ArrayList<ElevatorMessage> schedulerinfo = new ArrayList<ElevatorMessage>();
-	private ArrayList<ElevatorMessage> previousrequest = new ArrayList<ElevatorMessage>();
 
+	private ArrayList<ElevatorMessage> fromFloor, toFloor, fromElevator, toElevator;
 	
+	public Scheduler() {
+		fromFloor = new ArrayList<>();
+		toFloor = new ArrayList<>();
+		fromElevator = new ArrayList<>();
+		toElevator = new ArrayList<>();
+	}
+
+	//the floor thread calls this method to send messages to the scheduler
 	public synchronized void sendEvent(ElevatorMessage floorinfo) {
-		while(schedulerinfo.isEmpty() != true) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		schedulerinfo.add(floorinfo);
+		fromFloor.add(floorinfo);
+		System.out.println(Thread.currentThread().getName() + " SENT " + floorinfo);
 		notifyAll();
-	
 	}
  
+	//the elevator thread calls this method to read messages from the scheduler and send them back
 	public synchronized void getEvent() {
-		while(schedulerinfo.isEmpty() == true) {
+		while(toElevator.isEmpty() == true) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -30,29 +29,66 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		previousrequest.addAll(schedulerinfo); 
-		schedulerinfo.clear();
-		System.out.println(previousrequest);
-		previousrequest.clear();
+		fromElevator.add(toElevator.get(0)); 
+		System.out.println(Thread.currentThread().getName() + " RECEIVED AND SENT BACK " + toElevator.get(0));
+		toElevator.remove(0);
 		notifyAll();
-
 	}
 	
-	public String sendConfirmation() {
-		return "The elevator successfully stopped at" + requests() ;
-	}
-		
-	public ArrayList<ElevatorMessage> requests(){
-		return previousrequest;
+	//the floor thread calls this method to read messages from the scheduler
+	public synchronized void receiveEvent() {
+		while(toFloor.isEmpty() == true) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println(Thread.currentThread().getName() + " RECEIVED " + toFloor.get(0));
+		toFloor.remove(0);
+		notifyAll();
 	}
 	
-	public boolean getFlag() {
-		return flag;
+	//the scheduler thread passes messages from floor to elevator
+	private synchronized void handleFloorMessages() {
+		while(fromFloor.isEmpty()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		toElevator.add(fromFloor.get(0));
+		System.out.println(Thread.currentThread().getName() + " PASSED " + fromFloor.get(0) + " FROM FLOOR TO ELEVATOR");
+		fromFloor.remove(0);
+		notifyAll();
+	}
+	
+	//the scheduler thread passes messages from elevator to floor
+	private synchronized void handleElevatorMessages() {
+		while(fromElevator.isEmpty()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		toFloor.add(fromElevator.get(0));
+		System.out.println(Thread.currentThread().getName() + " PASSED " + fromElevator.get(0) + " FROM ELEVATOR TO FLOOR");
+		fromElevator.remove(0);
+		notifyAll();
 	}
  
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		while(true) {
+			handleFloorMessages();
+			handleElevatorMessages();
+		}
 	}
 
 }
