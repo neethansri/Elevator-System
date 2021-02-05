@@ -1,15 +1,18 @@
 
 public class Elevator implements Runnable {
+	Scheduler scheduler;
 	
-	public Elevator() {
-		
+	public Elevator(Scheduler scheduler) {
+		this.scheduler = scheduler;
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		
+	    while(true) {
+		scheduler.getEvent();
+		}
 	}
+	
 
 	
 }

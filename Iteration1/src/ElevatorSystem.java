@@ -3,14 +3,16 @@ public class ElevatorSystem {
 
 	public static void main(String[] args) {
 		
+		Scheduler scheduler = new Scheduler();
 		
-		Thread Floor = new Thread(new  Floor(),"Floor");
-		Thread Scheduler = new Thread(new  Scheduler(),"Scheduler");
-		Thread Elevator = new Thread(new Elevator(),"Elevator");
-		
-		//Scheduler.start();
+		Thread Floor = new Thread(new Floor(scheduler),"Floor");
+		Thread Scheduler = new Thread(new Scheduler(), "Scheduler");
+		Thread Elevator = new Thread(new Elevator(scheduler),"Elevator");
+	
 		Floor.start();
-		//Elevator.start();
+		Elevator.start();
+		Scheduler.start();
+		
 
 	}
 
