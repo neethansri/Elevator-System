@@ -6,7 +6,7 @@ public class ElevatorSystem {
 		Scheduler scheduler = new Scheduler();
 		
 		Thread Floor = new Thread(new Floor(scheduler),"Floor");
-		Thread Scheduler = new Thread(new Scheduler(), "Scheduler");
+		Thread Scheduler = new Thread(scheduler, "Scheduler");
 		Thread Elevator = new Thread(new Elevator(scheduler),"Elevator");
 	
 		Floor.start();

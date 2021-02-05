@@ -3,15 +3,19 @@ import java.util.ArrayList;
 
 public class Scheduler implements Runnable {
 
-	private ArrayList<ElevatorMessage> fromFloor = new ArrayList<ElevatorMessage>();
-	private ArrayList<ElevatorMessage> toFloor = new ArrayList<ElevatorMessage>();
-	private ArrayList<ElevatorMessage> fromElevator = new ArrayList<ElevatorMessage>();
-	private ArrayList<ElevatorMessage> toElevator = new ArrayList<ElevatorMessage>();
+	private ArrayList<ElevatorMessage> fromFloor, toFloor, fromElevator, toElevator;
+	
+	public Scheduler() {
+		fromFloor = new ArrayList<>();
+		toFloor = new ArrayList<>();
+		fromElevator = new ArrayList<>();
+		toElevator = new ArrayList<>();
+	}
 
 	//the floor thread calls this method to send messages to the scheduler
 	public synchronized void sendEvent(ElevatorMessage floorinfo) {
 		fromFloor.add(floorinfo);
-		System.out.println("FLOOR SENT " + floorinfo);
+		System.out.println(Thread.currentThread().getName() + " SENT " + floorinfo);
 		notifyAll();
 	}
  
@@ -25,14 +29,14 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		fromElevator.addAll(toElevator); 
-		toElevator.clear();
-		System.out.println("ELEVATOR RECIEVED AND SENT BACK" + toElevator);
+		fromElevator.add(toElevator.get(0)); 
+		System.out.println(Thread.currentThread().getName() + " RECEIVED AND SENT BACK " + toElevator.get(0));
+		toElevator.remove(0);
 		notifyAll();
 	}
 	
 	//the floor thread calls this method to read messages from the scheduler
-	public synchronized void recieveEvent() {
+	public synchronized void receiveEvent() {
 		while(toFloor.isEmpty() == true) {
 			try {
 				wait();
@@ -41,8 +45,8 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("FLOOR RECIEVED " + toFloor);
-		toFloor.clear();
+		System.out.println(Thread.currentThread().getName() + " RECEIVED " + toFloor.get(0));
+		toFloor.remove(0);
 		notifyAll();
 	}
 	
@@ -56,9 +60,9 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		toElevator.addAll(fromFloor);
-		System.out.println("SCHEDULER PASSED " + fromFloor + " FROM FLOOR TO ELEVATOR");
-		fromFloor.clear();
+		toElevator.add(fromFloor.get(0));
+		System.out.println(Thread.currentThread().getName() + " PASSED " + fromFloor.get(0) + " FROM FLOOR TO ELEVATOR");
+		fromFloor.remove(0);
 		notifyAll();
 	}
 	
@@ -72,23 +76,11 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		toFloor.addAll(fromElevator);
-		System.out.println("SCHEDULER PASSED " + fromElevator + " FROM ELEVATOR TO FLOOR");
-		fromElevator.clear();
+		toFloor.add(fromElevator.get(0));
+		System.out.println(Thread.currentThread().getName() + " PASSED " + fromElevator.get(0) + " FROM ELEVATOR TO FLOOR");
+		fromElevator.remove(0);
 		notifyAll();
 	}
-	
-	/*public String sendConfirmation() {
-		return "The elevator successfully stopped at" + requests() ;
-	}*/
-		
-	/*public ArrayList<ElevatorMessage> requests(){
-		return previousrequest;
-	}
-	
-	public boolean getFlag() {
-		return flag;
-	}*/
  
 	@Override
 	public void run() {

@@ -17,7 +17,6 @@ public class Floor implements Runnable {
 	@Override
 	public void run() {
 		  readFile();
-		  scheduler.recieveEvent();
 		  System.exit(0);
     }	
 	
@@ -31,6 +30,8 @@ public class Floor implements Runnable {
 			        	floorinfo = new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(), Integer.parseInt(data[3]));
 			        
 			        	scheduler.sendEvent(floorinfo);
+			        	scheduler.receiveEvent();
+			        	
 			        	Line = read.readLine();
 			        }
 				}
