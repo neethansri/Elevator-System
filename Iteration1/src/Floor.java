@@ -16,12 +16,12 @@ public class Floor implements Runnable {
 
 	@Override
 	public void run() {
-		while(true) {
-		    scheduler.sendEvent(readFile());
-	    }
+		  readFile();
+		  scheduler.recieveEvent();
+		  System.exit(0);
     }	
 	
-	public ElevatorMessage readFile() {
+	public void readFile() {
 				try (BufferedReader read = new BufferedReader(new FileReader("./floorInfo.txt"))){
 				
 			        String Line;
@@ -29,6 +29,9 @@ public class Floor implements Runnable {
 			        while(Line != null) {
 			        	String[] data = Line.split(" ");
 			        	floorinfo = new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(), Integer.parseInt(data[3]));
+			        
+			        	scheduler.sendEvent(floorinfo);
+			        	Line = read.readLine();
 			        }
 				}
 
@@ -36,12 +39,5 @@ public class Floor implements Runnable {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-	
-
-		
-		
-	
-	return floorinfo;
-
 }
 }
