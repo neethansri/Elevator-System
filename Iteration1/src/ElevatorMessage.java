@@ -1,5 +1,3 @@
-import java.util.Date;
-
 
 public class ElevatorMessage {
 
@@ -9,9 +7,7 @@ public class ElevatorMessage {
 	private String dir;
 	private ElevatorDirection direction;
 	
-	
-	
-	
+
 	public ElevatorMessage(String time, int floor, String dir, int button) {
 		this.time = time;
 		this.floor = floor;
