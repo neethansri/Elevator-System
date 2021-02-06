@@ -1,6 +1,6 @@
 # Sysc3303_Group1
 
-author Solan Siva 101067491 
+author Solan Siva 101067491
 author Ben Bagg 101122318
 author Vijay Ramalingom 101073072
 author Mohammad Issa 101065045
