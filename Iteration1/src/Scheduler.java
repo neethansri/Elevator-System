@@ -1,9 +1,9 @@
-import java.util.List;
 import java.util.ArrayList;
 
 public class Scheduler implements Runnable {
 
 	private ArrayList<ElevatorMessage> fromFloor, toFloor, fromElevator, toElevator;
+	private ElevatorMessage testVariable;
 	
 	public Scheduler() {
 		fromFloor = new ArrayList<>();
@@ -11,11 +11,15 @@ public class Scheduler implements Runnable {
 		fromElevator = new ArrayList<>();
 		toElevator = new ArrayList<>();
 	}
+	
+	public String getTest() {
+		return testVariable.toString();
+	}
 
 	//the floor thread calls this method to send messages to the scheduler
-	public synchronized void sendEvent(ElevatorMessage floorinfo) {
-		fromFloor.add(floorinfo);
-		System.out.println(Thread.currentThread().getName() + " SENT " + floorinfo);
+	public synchronized void sendEvent(ElevatorMessage floorInfo) {
+		fromFloor.add(floorInfo);
+		System.out.println(Thread.currentThread().getName() + " SENT " + floorInfo);
 		notifyAll();
 	}
  
@@ -25,11 +29,11 @@ public class Scheduler implements Runnable {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		fromElevator.add(toElevator.get(0)); 
+		fromElevator.add(toElevator.get(0));
+		testVariable = toElevator.get(0);
 		System.out.println(Thread.currentThread().getName() + " RECEIVED AND SENT BACK " + toElevator.get(0));
 		toElevator.remove(0);
 		notifyAll();
@@ -41,7 +45,6 @@ public class Scheduler implements Runnable {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -56,7 +59,6 @@ public class Scheduler implements Runnable {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -72,7 +74,6 @@ public class Scheduler implements Runnable {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -84,7 +85,6 @@ public class Scheduler implements Runnable {
  
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		while(true) {
 			handleFloorMessages();
 			handleElevatorMessages();
