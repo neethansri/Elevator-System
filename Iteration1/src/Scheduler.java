@@ -1,13 +1,10 @@
-
-/**
- * 
- * @author Solan Siva
- * @author Ben Bagg
- * @author Vijay Ramalingom
- * @author Mohammad Issa
+/*
+ * @author Solan Siva 101067491
+ * @author Ben Bagg 101122318
+ * @author Vijay Ramalingom 101073072
+ * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-import java.util.List;
 
 import java.util.ArrayList;
 
@@ -15,7 +12,7 @@ public class Scheduler implements Runnable {
 	
 	//initializing the array used to hold events
 	private ArrayList<ElevatorMessage> fromFloor, toFloor, fromElevator, toElevator;
-	private ElevatorMessage testVariable;
+	private String floorTest, elevatorTest, schedulerTest;
 	
 	/**
 	 * constructor for Scheduler to initialize scheduler object 
@@ -27,10 +24,15 @@ public class Scheduler implements Runnable {
 		toElevator = new ArrayList<>();
 	}
 	
-	public String getTest() {
-		return testVariable.toString();
+	public String getFloorTest() {
+		return floorTest;
 	}
-
+	public String getElevatorTest() {
+		return elevatorTest;
+	}
+	public String getSchedulerTest() {
+		return schedulerTest;
+	}
 
 	/**
 	 * the floor thread calls this method to send messages to the scheduler
@@ -38,12 +40,11 @@ public class Scheduler implements Runnable {
 	 */
 	public synchronized void sendEvent(ElevatorMessage floorInfo) {
 		//adding floorInfo to the fromFloor arrayList
-		fromFloor.add(floorInfo); 
+		fromFloor.add(floorInfo);
 		System.out.println(Thread.currentThread().getName() + " SENT " + floorInfo);
+		floorTest = "Floor SENT " + floorInfo;
 		notifyAll(); // notifyAll threads that are not awake
-
 	}
-	
 	
 	
 	/**
@@ -60,9 +61,8 @@ public class Scheduler implements Runnable {
 		}
 
 		fromElevator.add(toElevator.get(0));
-		testVariable = toElevator.get(0);
-
 		System.out.println(Thread.currentThread().getName() + " RECEIVED AND SENT BACK " + toElevator.get(0));
+		elevatorTest = "Elevator RECEIVED AND SENT BACK " + toElevator.get(0);
 		toElevator.remove(0);
 		notifyAll(); //notify threads that are not awake
 	}
@@ -89,7 +89,7 @@ public class Scheduler implements Runnable {
 	/**
 	 * the scheduler thread passes messages from floor to elevator
 	 */
-	private synchronized void handleFloorMessages() {
+	public synchronized void handleFloorMessages() {
 		//while fromFloor array is empty
 		while(fromFloor.isEmpty()) {
 			try {
@@ -105,7 +105,7 @@ public class Scheduler implements Runnable {
 	}
 	
 	//the scheduler thread passes messages from elevator to floor
-	private synchronized void handleElevatorMessages() {
+	public synchronized void handleElevatorMessages() {
 		// while fromElevator is empty
 		while(fromElevator.isEmpty()) {
 			try {
@@ -116,6 +116,7 @@ public class Scheduler implements Runnable {
 		}
 		toFloor.add(fromElevator.get(0)); // add to the array for handling ElevatorMessage
 		System.out.println(Thread.currentThread().getName() + " PASSED " + fromElevator.get(0) + " FROM ELEVATOR TO FLOOR");
+		schedulerTest = "Scheduler PASSED " + fromElevator.get(0) + " FROM ELEVATOR TO FLOOR";
 		fromElevator.remove(0);
 		notifyAll(); // notify all threads that are not awake
 	}

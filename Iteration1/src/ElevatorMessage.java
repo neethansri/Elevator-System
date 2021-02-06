@@ -1,14 +1,10 @@
-
-/**
- * 
- * @author Solan Siva
- * @author Ben Bagg
- * @author Vijay Ramalingom
- * @author Mohammad Issa
+/*
+ * @author Solan Siva 101067491
+ * @author Ben Bagg 101122318
+ * @author Vijay Ramalingom 101073072
+ * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-import java.util.Date;
-
 
 public class ElevatorMessage {
 
