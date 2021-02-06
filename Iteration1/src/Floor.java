@@ -7,7 +7,7 @@ public class Floor implements Runnable {
 	
 	
 	Scheduler scheduler;
-	private ElevatorMessage floorinfo;
+	private ElevatorMessage floorInfo;
 	
 	public Floor(Scheduler scheduler) {
 		this.scheduler = scheduler;
@@ -17,7 +17,6 @@ public class Floor implements Runnable {
 	@Override
 	public void run() {
 		  readFile();
-		  System.exit(0);
     }	
 	
 	public void readFile() {
@@ -27,9 +26,9 @@ public class Floor implements Runnable {
 			        Line = read.readLine();
 			        while(Line != null) {
 			        	String[] data = Line.split(" ");
-			        	floorinfo = new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(), Integer.parseInt(data[3]));
+			        	floorInfo = new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(), Integer.parseInt(data[3]));
 			        
-			        	scheduler.sendEvent(floorinfo);
+			        	scheduler.sendEvent(floorInfo);
 			        	scheduler.receiveEvent();
 			        	
 			        	Line = read.readLine();
@@ -37,7 +36,6 @@ public class Floor implements Runnable {
 				}
 
 				 catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 }
