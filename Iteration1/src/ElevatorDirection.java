@@ -12,7 +12,5 @@
  *
  */
 public enum ElevatorDirection {
-	    UP,
-		DOWN,
-		STOP
+	UP, DOWN, STOP
 }
