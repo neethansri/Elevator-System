@@ -1,3 +1,5 @@
+import java.sql.Date;
+
 /*
  * @author Solan Siva 101067491
  * @author Ben Bagg 101122318
@@ -74,7 +76,7 @@ public class ElevatorMessage {
 		} else if (dir.equals("DOWN")) {
 			direction = direction.DOWN;
 		} else {
-			direction = direction.STOP;
+			direction = direction.STOPPED;
 		}
 		return direction;
 	}

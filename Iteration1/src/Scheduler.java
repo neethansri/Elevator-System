@@ -7,13 +7,18 @@
  */
 
 import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalTime;
 
 public class Scheduler implements Runnable {
 
 	// initializing the array used to hold events
-	private ArrayList<ElevatorMessage> fromFloor, toFloor, fromElevator, toElevator;
+	private List<ElevatorMessage> fromFloor, toFloor, fromElevator, toElevator;
 	private String floorTest, elevatorTest, schedulerTest;
+	
+	private List<ElevatorUpdate> pendingElevatorUpdates;
+	
+	private SchedulerState currentState;
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object
@@ -23,6 +28,8 @@ public class Scheduler implements Runnable {
 		toFloor = new ArrayList<>();
 		fromElevator = new ArrayList<>();
 		toElevator = new ArrayList<>();
+		pendingElevatorUpdates = new ArrayList<>();
+		currentState = SchedulerState.IDLE;
 	}
 
 	/**
@@ -69,7 +76,7 @@ public class Scheduler implements Runnable {
 	 * the elevator thread calls this method to read messages from the scheduler and
 	 * send them back
 	 */
-	public synchronized void getEvent() {
+	public synchronized ElevatorMessage getEvent() {
 		// while toElevator is empty
 		while (toElevator.isEmpty() == true) {
 			try {
@@ -78,14 +85,11 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-
-		fromElevator.add(toElevator.get(0));
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println("The " + Thread.currentThread().getName() + " Subsystem received and sent back: "
-				+ toElevator.get(0) + ", to the scheuler \n");
-		elevatorTest = "Elevator RECEIVED AND SENT BACK " + toElevator.get(0);
+		
+		ElevatorMessage message = toElevator.get(0);
 		toElevator.remove(0);
-		notifyAll(); // notify threads that are not awake
+		notifyAll();
+		return message;
 	}
 
 	/**
@@ -105,6 +109,27 @@ public class Scheduler implements Runnable {
 				+ ", from the scheduler \n");
 		toFloor.remove(0);
 		notifyAll(); // notify threads that are not awake
+	}
+	
+	public synchronized void updateElevatorState(ElevatorUpdate eu) {
+		pendingElevatorUpdates.add(eu);
+		notifyAll();
+	}
+	
+	public synchronized void readElevatorState() {
+		while(pendingElevatorUpdates.isEmpty()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		ElevatorUpdate eu = pendingElevatorUpdates.get(0);
+		pendingElevatorUpdates.remove(0);
+		System.out.println("Time: " + LocalTime.now());
+		System.out.println(Thread.currentThread().getName() + " has been notified that the elevator is at floor " + eu.getFloor() + ""
+				+ " and has direction " + eu.getDirection() + "\n");
+		notifyAll();
 	}
 
 	/**
@@ -154,7 +179,6 @@ public class Scheduler implements Runnable {
 	public void run() {
 		while (true) {
 			handleFloorMessages();
-			handleElevatorMessages();
 		}
 	}
 
