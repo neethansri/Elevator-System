@@ -13,21 +13,49 @@ public class Elevator implements Runnable {
 	// initializing variables
 	public static final int INITIAL_FLOOR = 1;
 	
+	/**
+	 * The current state of the elevator
+	 */
 	private ElevatorState currentState;
 
+	/**
+	 * A list of pending requests from the scheduler
+	 */
 	private List<ElevatorMessage> floorsToVisit;
 
+	/**
+	 * The scheduler giving this elevator requests
+	 */
 	private Scheduler scheduler;
+	
+	/**
+	 * The direction of the elevator
+	 */
 	private ElevatorDirection direction;
+	
+	/**
+	 * The floor number of the floor that the elevator is currently at.
+	 * If the elevator is between floors, the value is the next floor that the elevator will arrive at
+	 */
 	private int floor;
 	
+	/**
+	 * The number of floors that the elevator has travelled without stopping at a floor.
+	 * This is useful when calculating the elevator's speed and acceleration
+	 */
 	private int floorsTravelledWithoutStopping;
 	
+	/**
+	 * Values calculated in Iteration 0
+	 */
 	private static final double ACCELERATION_RATE = 0.227964392;
 	private static final double MAXIMUM_SPEED = 1.694915254;
 	private static final double FLOOR_DISTANCE = 3.5;
 	private static final double LOADING_TIME = 9391;
 	
+	/**
+	 * 
+	 */
 	private static double timeToAccelerateToMaxSpeed = MAXIMUM_SPEED / ACCELERATION_RATE;;
 	private static double distanceToAccelerateToMaxSpeed = Math.pow(MAXIMUM_SPEED, 2) / (2 * ACCELERATION_RATE);
 
