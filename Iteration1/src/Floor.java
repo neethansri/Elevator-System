@@ -1,7 +1,7 @@
 
 /*
  * @author Solan Siva 101067491
- * @author Ben Bagg 101122318
+ * @author Ben Baggs 101122318
  * @author Vijay Ramalingom 101073072
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
@@ -50,7 +50,6 @@ public class Floor implements Runnable {
 						Integer.parseInt(data[3])); // creates a ElevatorMessage class with the values from the file
 
 				scheduler.sendEvent(floorInfo);// send this event from floor to elevator
-				scheduler.receiveEvent();// receive event from elevator back to floor
 
 				Line = read.readLine(); // if multiple lines, set the next line
 
