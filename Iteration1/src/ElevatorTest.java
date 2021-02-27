@@ -45,10 +45,4 @@ public class ElevatorTest {
 		assertEquals("Elevator RECEIVED AND SENT BACK 14:05:15.0 2 UP 4", scheduler.getElevatorTest());
 	}
 
-	@Test
-	public void schedulerTest() {
-		scheduler.handleElevatorMessages();
-		assertEquals("Scheduler PASSED 14:05:15.0 2 UP 4 FROM ELEVATOR TO FLOOR", scheduler.getSchedulerTest());
-	}
-
 }

@@ -2,7 +2,7 @@ import java.sql.Date;
 
 /*
  * @author Solan Siva 101067491
- * @author Ben Bagg 101122318
+ * @author Ben Baggs 101122318
  * @author Vijay Ramalingom 101073072
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
@@ -20,12 +20,11 @@ public class ElevatorMessage {
 	/**
 	 * ElevatorMessage constructor used to initialize ElevatorMessage object
 	 * 
-	 * @param time
-	 * @param floor
-	 * @param dir
-	 * @param button
+	 * @param time the time that the message was generated
+	 * @param floor the floor button that was pressed
+	 * @param dir the direction button that was pressed
+	 * @param button the car button that was pressed
 	 */
-
 	public ElevatorMessage(String time, int floor, String dir, int button) {
 		this.time = time;
 		this.floor = floor;
