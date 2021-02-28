@@ -1,0 +1,9 @@
+Work Distributon for Iteration 1
+
+scheduler.java & floor.java - Ben Bagg and Solan Siva and Mohammad Issa
+
+elevatorMessage.java & elevatorDirection - Neethan Sriranganathan and Vijay Ramalingom
+
+Junit testing and elevator.java - Mohammad Issa and Benn Bagg
+
+UML, Sequence Diagram and elevator.java - Vijay Ramalingom & Neethan Sriranganathan
