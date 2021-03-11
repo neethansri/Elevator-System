@@ -107,8 +107,9 @@ public class Scheduler implements Runnable {
 		if(pendingElevatorUpdates.isEmpty()) currentState = SchedulerState.IDLE;
 		
 		System.out.println("Time: " + LocalTime.now());
-		System.out.println(Thread.currentThread().getName() + " has been notified that the elevator is at floor " + eu.getFloor() + ""
-				+ " and has direction " + eu.getDirection() + "\n");
+		System.out.println(Thread.currentThread().getName() + " has been notified that the elevator is at floor " + eu.getFloor() + ", has "
+				+ eu.getPassengers() + " passengers, and has direction "
+				+ eu.getDirection() + "\n");
 		notifyAll();
 	}
 
