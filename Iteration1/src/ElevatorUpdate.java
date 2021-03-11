@@ -23,16 +23,19 @@ public class ElevatorUpdate {
 	 */
 	private LocalTime time;
 	
+	private int passengers;
+	
 	/**
 	 * Constructor of class ElevatorUpdate
 	 * @param floor The current floor of the elevator
 	 * @param direction The current direction of the elevator
 	 * @param time The time that the elevator sent the update
 	 */
-	public ElevatorUpdate(int floor, ElevatorDirection direction, LocalTime time) {
+	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, LocalTime time) {
 		this.floor = floor;
 		this.direction = direction;
 		this.time = time;
+		this.passengers = passengers;
 	}
 
 	/**
@@ -49,6 +52,10 @@ public class ElevatorUpdate {
 	 */
 	public ElevatorDirection getDirection() {
 		return direction;
+	}
+	
+	public int getPassengers() {
+		return passengers;
 	}
 
 	/**
