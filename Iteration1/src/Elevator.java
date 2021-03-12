@@ -20,7 +20,12 @@ public class Elevator implements Runnable {
 	/**
 	 * A list of pending requests from the scheduler
 	 */
-	private List<ElevatorMessage> floorsToVisit;
+	private List<ElevatorMessage> pendingMessages;
+	
+	private Set<Integer> floorsToVisit;
+	
+	private List<Integer> passengerDestinations;
+	
 	/**
 	 * The scheduler giving this elevator requests
 	 */
@@ -80,7 +85,9 @@ public class Elevator implements Runnable {
 		direction = ElevatorDirection.STOPPED;
 		floor = INITIAL_FLOOR;
 		currentState = ElevatorState.STOPPED;
-		floorsToVisit = new ArrayList<>();
+		pendingMessages = new ArrayList<>();
+		passengerDestinations = new ArrayList<>();
+		floorsToVisit = new HashSet<>();
 		floorsTravelledWithoutStopping = 0;
 	}
 	
@@ -138,8 +145,19 @@ public class Elevator implements Runnable {
 	 * Adds a request to the elevator's list
 	 * @param floorNum The ElevatorMessage to be added
 	 */
-	public synchronized void addFloorToVisit(ElevatorMessage message) {
-		if(!floorsToVisit.contains(message)) floorsToVisit.add(message);
+	public synchronized void addRequest(ElevatorMessage message) {
+		if(!pendingMessages.contains(message)) {
+			pendingMessages.add(message);
+			floorsToVisit.add(message.getFloor());
+		}
+	}
+	
+	private ElevatorDirection getDirectionFromStop(int currentFloor) {
+		for(Integer floorToVisit: floorsToVisit) {
+			if(floorToVisit > currentFloor && direction == ElevatorDirection.UP) return ElevatorDirection.UP;
+			if(floorToVisit < currentFloor && direction == ElevatorDirection.DOWN) return ElevatorDirection.DOWN;
+		}
+		return direction == ElevatorDirection.UP? ElevatorDirection.DOWN: ElevatorDirection.UP;
 	}
 	
 	/**
@@ -147,9 +165,16 @@ public class Elevator implements Runnable {
 	 * @param floorNum The floor number of the request to be removed
 	 */
 	private synchronized void removeFloorToVisit(int floorNum) {
-		for(ElevatorMessage m: floorsToVisit) {
-			if(m.getFloor() == floorNum) floorsToVisit.remove(m);
-			break;
+		floorsToVisit.remove(floorNum);
+		passengerDestinations.removeIf(n -> (n == floorNum));
+		Iterator<ElevatorMessage> iter = pendingMessages.iterator();
+		while(iter.hasNext()) {
+			ElevatorMessage m = iter.next();
+			if(m.getFloor() == floorNum && m.getButton() != floorNum) {
+				passengerDestinations.add(m.getButton());
+				floorsToVisit.add(m.getButton());
+				iter.remove();
+			}
 		}
 	}
 	
@@ -159,8 +184,8 @@ public class Elevator implements Runnable {
 	 * @return True if the elevator should stop, false otherwise
 	 */
 	private boolean shouldStopAtFloor(int floorNum) {
-		for(ElevatorMessage m: floorsToVisit) {
-			if(m.getFloor() == floorNum) return true;
+		for(Integer floor: floorsToVisit) {
+			if(floor == floorNum) return true;
 		}
 		return false;
 	}
@@ -178,20 +203,14 @@ public class Elevator implements Runnable {
 					if(!floorsToVisit.isEmpty()) {
 						//the elevator has pending requests and shall start moving
 						currentState = ElevatorState.MOVING;
-						if(floorsToVisit.get(0).getFloor() > floor) {
-							direction = ElevatorDirection.UP;
-							floor++;
-						}
-						else if(floorsToVisit.get(0).getFloor() < floor) {
-							direction = ElevatorDirection.DOWN;
-							floor--;
-						}
+						direction = getDirectionFromStop(floor);
+						floor += direction == ElevatorDirection.UP? 1: -1;
 						
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " is starting to move towards floor " + floor + "\n");
 						
 						//tell the scheduler that its moving
-						scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, LocalTime.now()));
+						scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
 						
 						//sleep for the amount of time until the elevator approaches the next approach point
 						try {
@@ -205,20 +224,30 @@ public class Elevator implements Runnable {
 				//the elevator is moving, and therefore at the approach point of a floor
 				if(shouldStopAtFloor(floor)) {
 					//the elevator should stop at the next floor
+					
+					System.out.println("Time: " + LocalTime.now());
+					System.out.println(Thread.currentThread().getName() + " has decided to stop at floor " + floor + "\n");
+					
 					currentState = ElevatorState.STOPPED;
-					direction = ElevatorDirection.STOPPED;
+					//not changing direction to stopped so that the elevator will remember which way it was going most recently
+					//direction = ElevatorDirection.STOPPED;
 					floorsTravelledWithoutStopping = 0;
 					removeFloorToVisit(floor);
 					
-					System.out.println("Time: " + LocalTime.now());
-					System.out.println(Thread.currentThread().getName() + " is stopping at floor " + floor + "\n");
-					
 					//tell the scheduler that its stopping
-					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, LocalTime.now()));
+					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
 					
 					//sleep for the amount of time until the elevator decelerates and stops at the floor + the loading time while stopped
 					try {
-						Thread.sleep((long) (timeToDecelerate(floorsTravelledWithoutStopping) + LOADING_TIME));
+						Thread.sleep((long) timeToDecelerate(floorsTravelledWithoutStopping));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					System.out.println("Time: " + LocalTime.now());
+					System.out.println(Thread.currentThread().getName() + " has stopped at floor " + floor + "\n");
+					//sleep for the loading time while stopped
+					try {
+						Thread.sleep((long) LOADING_TIME);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -226,13 +255,13 @@ public class Elevator implements Runnable {
 				else {
 					//the elevator should skip the next floor and move to the next approach point
 					System.out.println("Time: " + LocalTime.now());
-					System.out.println(Thread.currentThread().getName() + " is skipping floor " + floor + "\n");
+					System.out.println(Thread.currentThread().getName() + " has decided to skip floor " + floor + "\n");
 					
 					floor += direction == ElevatorDirection.UP? 1: -1;
 					floorsTravelledWithoutStopping++;
 					
 					//tell the scheduler that its continuing
-					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, LocalTime.now()));
+					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
 					
 					//sleep for the amount of time until the elevator reaches the next approach point;
 					try {
