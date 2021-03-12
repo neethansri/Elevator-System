@@ -91,6 +91,8 @@ public class Elevator implements Runnable {
 		floorsTravelledWithoutStopping = 0;
 	}
 	
+	
+	
 	/**
 	 * Calculates the time required for the elevator to move to the approach point for the floor a specified number of floors away from a full stop
 	 * @param consecutiveFloors The number of floors away the elevator needs to go 
