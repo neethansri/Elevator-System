@@ -1,6 +1,11 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.time.LocalTime;
+import java.util.*;
 /**
  * @author Solan Siva 101067491
  * @author Ben Baggs 101122318
@@ -9,10 +14,12 @@ import java.time.LocalTime;
  * @author Neethan Sriranganathan 101082581
  */
 public class Scheduler implements Runnable {
+	private DatagramSocket receiveSocket, socket;
+	private DatagramPacket recievedPacket, ackPacket;
 
 	private List<ElevatorMessage> fromFloor, toElevator;
 	private String floorTest, elevatorTest, schedulerTest;
-	
+	private ElevatorMessage floorinfo;
 	private List<ElevatorUpdate> pendingElevatorUpdates;
 	
 	private SchedulerState currentState;
@@ -26,7 +33,7 @@ public class Scheduler implements Runnable {
 		pendingElevatorUpdates = new ArrayList<>();
 		currentState = SchedulerState.IDLE;
 	}
-
+				
 	/**
 	 * 
 	 * @return the message sent from the floor to the scheduler
@@ -50,6 +57,10 @@ public class Scheduler implements Runnable {
 	 */
 	public String getSchedulerTest() {
 		return schedulerTest;
+	}
+	
+	public List<ElevatorMessage> getfromFloor(){
+		return fromFloor;
 	}
 
 	/**
