@@ -19,7 +19,7 @@ public class FloorReciever implements Runnable{
 	
 	private static final int SCHEDULER_PORT = 50;
 	
-	private DatagramSocket socket, sendSocket;
+	private DatagramSocket socket;
 	
 	private InetAddress local; 
 	
@@ -47,7 +47,6 @@ public class FloorReciever implements Runnable{
 		floorPort = port;
 		try {
 			socket = new DatagramSocket(floorPort);
-			sendSocket = new DatagramSocket();
 			local = InetAddress.getLocalHost();
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -72,6 +71,10 @@ public class FloorReciever implements Runnable{
 		}
 	}*/
 	
+	private synchronized void sendPacket(DatagramPacket packet) throws IOException {
+		socket.send(packet);
+	}
+	
 	public void sendElevatorMessage(ElevatorMessage em) {
 		
 		byte message[] = em.toByteArray();
@@ -83,7 +86,7 @@ public class FloorReciever implements Runnable{
 			System.out.println("Time: " + LocalTime.now());
 			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to scheduler\n");
 			
-				socket.send(packetToSend);
+			sendPacket(packetToSend);
 			
 			
 		} catch (IOException e) {
@@ -102,7 +105,7 @@ public class FloorReciever implements Runnable{
 				try {
 					
 					
-						socket.receive(packetToReceive);
+					socket.receive(packetToReceive);
 					
 					
 					byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
@@ -118,7 +121,7 @@ public class FloorReciever implements Runnable{
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to the scheduler.\n");
 						
-							socket.send(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
+							sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
 						
 					}
 					

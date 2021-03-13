@@ -24,7 +24,7 @@ public class SchedulerReciever implements Runnable{
 	
 	private InetAddress local; 
 	
-	private DatagramSocket socket, sendSocket;
+	private DatagramSocket socket;
 	
 	private static final int SCHEDULER_PORT = 50;
 	
@@ -50,11 +50,14 @@ public class SchedulerReciever implements Runnable{
 		this.scheduler = scheduler;
 		try {
 			socket = new DatagramSocket(SCHEDULER_PORT);
-			sendSocket = new DatagramSocket();
 			local = InetAddress.getLocalHost();
 		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private synchronized void sendPacket(DatagramPacket packet) throws IOException {
+		socket.send(packet);
 	}
 	
 	//if scheduler sends first
@@ -68,7 +71,7 @@ public class SchedulerReciever implements Runnable{
 			System.out.println("Time: " + LocalTime.now());
 			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to Elevator " + elevatorPort + "\n");
 			
-			sendSocket.send(packetToSend);
+			sendPacket(packetToSend);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -123,7 +126,7 @@ public class SchedulerReciever implements Runnable{
 				System.out.println("Time: " + LocalTime.now());
 				System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to " + (packetToReceive.getPort() == FLOOR_PORT? "floor": ("Elevator " + packetToReceive.getPort())) + ".\n");
 				
-				socket.send(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
+				sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
 				
 				
 			} catch (IOException e) {

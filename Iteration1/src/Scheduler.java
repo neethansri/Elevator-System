@@ -12,6 +12,8 @@ public class Scheduler implements Runnable {
 	
 	private Map<Integer, ElevatorUpdate> elevators;
 	
+	private Queue<ElevatorMessage> pendingRequests;
+	
 	private SchedulerReciever receiver;
 	
 	private static final List<Integer> ELEVATOR_PORT_NUMBERS = new ArrayList<>(Arrays.asList(1,2,3,4,5));
@@ -25,6 +27,8 @@ public class Scheduler implements Runnable {
 	public Scheduler() {
 		
 		elevators = new HashMap<>();
+		
+		pendingRequests = new LinkedList<>();
 		
 		for(Integer port: ELEVATOR_PORT_NUMBERS) {
 			elevators.put(port, ElevatorUpdate.initialStatus());
@@ -66,16 +70,53 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @param floorinfo type ElevatorMessage
 	 */
-	public synchronized void receiveElevatorMessage(ElevatorMessage floorInfo) {
-		
-		int chosenPort = 1;
-		
-		receiver.sendElevatorMessage(floorInfo, chosenPort);
+	public void receiveElevatorMessage(ElevatorMessage em) {
+		synchronized(pendingRequests) {
+			pendingRequests.add(em);
+			pendingRequests.notifyAll();
+		}
 	}
 
-	public synchronized void receiveElevatorUpdate(ElevatorUpdate eu, int port) {
+	public void receiveElevatorUpdate(ElevatorUpdate eu, int port) {
+		synchronized(elevators) {
+			elevators.replace(port, eu);
+		}
+	}
+	
+	private ElevatorMessage getNextPendingRequest() {
+		synchronized(pendingRequests) {
+			while(pendingRequests.isEmpty()) {
+				try {
+					pendingRequests.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			return pendingRequests.remove();
+		}
+	}
+	
+	/**
+	 * Chooses an elevator to service a given request.
+	 * @param em The request to be serviced
+	 */
+	private void assignElevatorToRequest(ElevatorMessage em) {
 		
-		elevators.replace(port, eu);
+		synchronized(elevators) {
+			//here's where you access the map containing elevator numbers, locations, directions, etc...
+		}
+		
+		//as of now, a random elevator is chosen for each request
+		Random r = new Random();
+		int chosenElevator = ELEVATOR_PORT_NUMBERS.get(r.nextInt(ELEVATOR_PORT_NUMBERS.size()));
+		
+		receiver.sendElevatorMessage(em, chosenElevator);
+	}
+	
+	public void processRequests() {
+		while(true) {
+			assignElevatorToRequest(getNextPendingRequest());
+		}
 	}
 	
 	@Override
@@ -84,7 +125,7 @@ public class Scheduler implements Runnable {
 	 * elevator and elevator to floor
 	 */
 	public void run() {
-		
+		processRequests();
 	}
 
 }

@@ -21,7 +21,7 @@ public class ElevatorReciever implements Runnable{
 	
 	private int elevatorPort;
 	
-	private DatagramSocket socket, sendSocket;
+	private DatagramSocket socket;
 	
 	private InetAddress local; 
 	
@@ -50,7 +50,6 @@ public class ElevatorReciever implements Runnable{
 		elevatorPort = port;
 		try {
 			socket = new DatagramSocket(elevatorPort);
-			sendSocket = new DatagramSocket();
 			local = InetAddress.getLocalHost();
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -75,6 +74,10 @@ public class ElevatorReciever implements Runnable{
 		}
 	}*/
 	
+	private synchronized void sendPacket(DatagramPacket packet) throws IOException {
+		socket.send(packet);
+	}
+	
 	public void sendElevatorUpdate(ElevatorUpdate eu) {
 		byte message[] = eu.toByteArray();
 		DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, SCHEDULER_PORT);
@@ -83,7 +86,8 @@ public class ElevatorReciever implements Runnable{
 			System.out.println("Time: " + LocalTime.now());
 			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to scheduler.\n");
 			
-			socket.send(packetToSend);
+			sendPacket(packetToSend);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -111,7 +115,10 @@ public class ElevatorReciever implements Runnable{
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to the scheduler.\n");
 						
-						socket.send(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));	
+						
+						sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));	
+						
+						
 					}		
 				} catch (IOException e) {
 					e.printStackTrace();
