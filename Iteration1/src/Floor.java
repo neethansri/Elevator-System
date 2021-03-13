@@ -54,7 +54,7 @@ public class Floor implements Runnable {
 				Line = read.readLine(); // if multiple lines, set the next line
 
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(10000);
 				} catch (InterruptedException e) {
 				}
 			}
