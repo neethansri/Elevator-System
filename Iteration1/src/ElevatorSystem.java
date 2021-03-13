@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Executes a test case for the current project iteration
  * @author Solan Siva 101067491
@@ -7,29 +11,26 @@
  * @author Neethan Sriranganathan 101082581
  */
 public class ElevatorSystem {
+	
+	private static final List<Integer> ELEVATOR_PORT_NUMBERS = new ArrayList<>(Arrays.asList(1,2,3,4,5));
+	
+	private static final int FLOOR_PORT = 100;
 
 	public static void main(String[] args) {
+		
+		//creating a floor object
+		Thread floorThread = new Thread(new Floor(FLOOR_PORT), "Floor");
 
 		// creating a scheduler object
-		Scheduler scheduler = new Scheduler();
-		Elevator elevator = new Elevator(scheduler);
-
-		// creating the threads
-		Thread Floor = new Thread(new Floor(scheduler), "Floor");
-		Thread Scheduler = new Thread(scheduler, "Scheduler");
-		Thread Elevator = new Thread(elevator, "Elevator");
-		Thread ElevatorReciever = new Thread(new ElevatorReciever(elevator, scheduler), "ElevatorReciever");
-		Thread SchedulerReciever = new Thread(new SchedulerReciever(scheduler), "SchedulerReciever");
-
-		System.out.println("The Elevator System has Started!\n");
+		Thread schedulerThread = new Thread(new Scheduler(), "Scheduler");
 		
-		// starting the threads
-		Floor.start();
-		Elevator.start();
-		Scheduler.start();
-		ElevatorReciever.start();
-		SchedulerReciever.start();
+		for(Integer port: ELEVATOR_PORT_NUMBERS) {
+			Thread thread = new Thread(new Elevator(port), "Elevator " + port);
+			thread.start();
+		}
 
+		schedulerThread.start();
+		floorThread.start();
 	}
 
 }

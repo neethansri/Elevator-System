@@ -1,10 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.time.LocalTime;
 import java.util.*;
 /**
  * @author Solan Siva 101067491
@@ -14,24 +9,31 @@ import java.util.*;
  * @author Neethan Sriranganathan 101082581
  */
 public class Scheduler implements Runnable {
-	private DatagramSocket receiveSocket, socket;
-	private DatagramPacket recievedPacket, ackPacket;
-
-	private List<ElevatorMessage> fromFloor, toElevator;
-	private String floorTest, elevatorTest, schedulerTest;
-	private ElevatorMessage floorinfo;
-	private List<ElevatorUpdate> pendingElevatorUpdates;
 	
-	private SchedulerState currentState;
+	private Map<Integer, ElevatorUpdate> elevators;
+	
+	private SchedulerReciever receiver;
+	
+	private static final List<Integer> ELEVATOR_PORT_NUMBERS = new ArrayList<>(Arrays.asList(1,2,3,4,5));
+
+	private String floorTest, elevatorTest, schedulerTest;
+
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object
 	 */
 	public Scheduler() {
-		fromFloor = new ArrayList<>();
-		toElevator = new ArrayList<>();
-		pendingElevatorUpdates = new ArrayList<>();
-		currentState = SchedulerState.IDLE;
+		
+		elevators = new HashMap<>();
+		
+		for(Integer port: ELEVATOR_PORT_NUMBERS) {
+			elevators.put(port, ElevatorUpdate.initialStatus());
+		}
+		
+		receiver = new SchedulerReciever(this);
+		
+		Thread receiverThread = new Thread(receiver, "Scheduler Receiver");
+		receiverThread.start();
 	}
 				
 	/**
@@ -58,101 +60,31 @@ public class Scheduler implements Runnable {
 	public String getSchedulerTest() {
 		return schedulerTest;
 	}
-	
-	public List<ElevatorMessage> getfromFloor(){
-		return fromFloor;
-	}
 
 	/**
 	 * the floor thread calls this method to send messages to the scheduler
 	 * 
 	 * @param floorinfo type ElevatorMessage
 	 */
-	public synchronized void sendEvent(ElevatorMessage floorInfo) {
-		// adding floorInfo to the fromFloor arrayList
-		fromFloor.add(floorInfo);
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println(
-				"The " + Thread.currentThread().getName() + " Subsystem sent: " + floorInfo + ", to the scheduler \n");
-		floorTest = "Floor SENT " + floorInfo;
-		notifyAll(); // notifyAll threads that are not awake
-	}
-
-	/**
-	 * the elevator thread calls this method to read messages from the scheduler and
-	 * send them back
-	 */
-	public synchronized ElevatorMessage getEvent() {
-		// while toElevator is empty
-		while (toElevator.isEmpty() == true) {
-			try {
-				wait(); // wait for it to fill
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+	public synchronized void receiveElevatorMessage(ElevatorMessage floorInfo) {
 		
-		ElevatorMessage message = toElevator.get(0);
-		toElevator.remove(0);
-		notifyAll();
-		return message;
+		int chosenPort = 1;
+		
+		receiver.sendElevatorMessage(floorInfo, chosenPort);
 	}
 
-	public synchronized void updateElevatorState(ElevatorUpdate eu) {
-		pendingElevatorUpdates.add(eu);
-		currentState = SchedulerState.PENDING;
-		notifyAll();
+	public synchronized void receiveElevatorUpdate(ElevatorUpdate eu, int port) {
+		
+		elevators.replace(port, eu);
 	}
 	
-	public synchronized void readElevatorState() {
-		while(pendingElevatorUpdates.isEmpty()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		ElevatorUpdate eu = pendingElevatorUpdates.get(0);
-		pendingElevatorUpdates.remove(0);
-		
-		if(pendingElevatorUpdates.isEmpty()) currentState = SchedulerState.IDLE;
-		
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println(Thread.currentThread().getName() + " has been notified that the elevator is at floor " + eu.getFloor() + ", has "
-				+ eu.getPassengers() + " passengers, and has direction "
-				+ eu.getDirection() + "\n");
-		notifyAll();
-	}
-
-	/**
-	 * the scheduler thread passes messages from floor to elevator
-	 */
-	public synchronized void handleFloorMessages() {
-		// while fromFloor array is empty
-		while (fromFloor.isEmpty()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		toElevator.add(fromFloor.get(0));
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println("The " + Thread.currentThread().getName() + " Subsystem passed: " + fromFloor.get(0)
-				+ ", from the floor to the elevator \n");
-		fromFloor.remove(0);
-		notifyAll(); // notify threads that are not awake
-	}
-
 	@Override
 	/**
 	 * run method in Scheduler thread used to handle the events from from floor to
 	 * elevator and elevator to floor
 	 */
 	public void run() {
-		while (true) {
-			handleFloorMessages();
-		}
+		
 	}
 
 }

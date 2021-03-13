@@ -1,4 +1,9 @@
-import java.sql.Date;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * @author Solan Siva 101067491
@@ -14,8 +19,10 @@ public class ElevatorMessage {
 	private String time;
 	private int floor;
 	private int button;
-	private String dir;
 	private ElevatorDirection direction;
+	
+	private static final int ELEVATOR_MESSAGE_SIGNATURE = 2;
+	public static final byte SPACER = 0;
 
 	/**
 	 * ElevatorMessage constructor used to initialize ElevatorMessage object
@@ -29,9 +36,26 @@ public class ElevatorMessage {
 		this.time = time;
 		this.floor = floor;
 		this.button = button;
-		this.dir = dir;
 		this.direction = convertDirection(dir);
 
+	}
+	
+	public ElevatorMessage(byte[] array) {
+		List<Integer> spacerIndexes = new ArrayList<>();
+		for(int i = 0; i < array.length; i++) {
+			if(array[i] == SPACER) spacerIndexes.add(i);
+		}
+		if(spacerIndexes.size() == 3) {
+			
+			floor = Integer.parseInt(new String(Arrays.copyOfRange(array, 1, spacerIndexes.get(0))));
+			button = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(0) + 1, spacerIndexes.get(1))));
+			direction = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(1) + 1, spacerIndexes.get(2)))) == 1? ElevatorDirection.UP: ElevatorDirection.DOWN;
+			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(2) + 1, array.length));
+		}
+		else {
+			//invalid byte array
+			return;
+		}
 	}
 
 	/**
@@ -96,6 +120,23 @@ public class ElevatorMessage {
 	 */
 	public String toString() {
 		return time + " " + floor + " " + direction + " " + button;
+	}
+	
+	public byte[] toByteArray() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		try {
+			stream.write(ELEVATOR_MESSAGE_SIGNATURE);
+			stream.write(String.valueOf(floor).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(button).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(direction == ElevatorDirection.UP? 1: -1).getBytes());
+			stream.write(SPACER);
+			stream.write(time.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return stream.toByteArray();
 	}
 
 }

@@ -2,6 +2,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.time.LocalTime;
+import java.util.Arrays;
 
 /**
  * Thread in the Scheduler subsystem that recieves updates from the elevators and notifies the scheduler
@@ -14,9 +18,29 @@ import java.net.InetAddress;
 public class SchedulerReciever implements Runnable{
 
 	/**
-	 * The scheduler associated with this reciever
+	 * The scheduler associated with this receiver
 	 */
 	private Scheduler scheduler;
+	
+	private InetAddress local; 
+	
+	private DatagramSocket socket, sendSocket;
+	
+	private static final int SCHEDULER_PORT = 50;
+	
+	private static final int MESSAGE_SIZE_LIMIT = 100;
+	
+	private static final byte[] ACK_MESSAGE = "ack".getBytes();
+	
+	//if elevator sends first
+	/*private static final byte[] ELEVATOR_MESSAGE_PROMPT = "prompt".getBytes();*/
+	
+	public static final byte ELEVATOR_UPDATE_SIGNATURE = 1;
+	public static final byte ELEVATOR_MESSAGE_SIGNATURE = 2;
+	
+	private static final int FLOOR_PORT = 100;
+	
+	
 	
 	/**
 	 * Constructor of class SchedulerReciever
@@ -24,62 +48,96 @@ public class SchedulerReciever implements Runnable{
 	 */
 	public SchedulerReciever(Scheduler scheduler) {
 		this.scheduler = scheduler;
-	}
-
-	public void replyMessage() {
 		try {
-			DatagramSocket receiveSocket = new DatagramSocket(25); //creates a socket bound to port portNumber
-			System.out.println(Thread.currentThread().getName() + " is running on port: " + 25);
-			//local = InetAddress.getLocalHost(); //Creates inetaddress containing localhost
-			byte[] ackData = "ack".getBytes(); //Defines ack byte array
-			byte[] negAck = "NA".getBytes();;
-
-			while (true) { //loop infinitely  
-				DatagramPacket recievedPacket = new DatagramPacket(new byte[4], 4);
-				receiveSocket.receive(recievedPacket);//Recieve a packet
-				byte[] data = recievedPacket.getData();
-				
-//				printPacket(recievedPacket, false);
-				ElevatorMessage floorInfo = new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),
-						Integer.parseInt(data[3])); // creates a ElevatorMessage class with the values from the file
-				DatagramPacket ackPacket;
-				if (new String(recievedPacket.getData()).trim().equals("request")) { //If the recievedPacket was a request
-					if (scheduler.getfromFloor().isEmpty()) { //If there are no packets to forward
-						ackPacket = new DatagramPacket(negAck, negAck.length, InetAddress.getLocalHost(), recievedPacket.getPort()); //acknowledge that packet
-//						printPacket(ackPacket, true);
-						receiveSocket.send(ackPacket);//acknowledge that packet						
-					} else {
-						System.out.println(Thread.currentThread().getName()+": Request Receieved, there are " + pendingElevatorUpdates.size()+ "messages waiting");
-//						printPacket(queue.peek(), true);
-						receiveSocket.send(scheduler.getfromFloor()); //Send the first packet waiting
-						
-					}
-				} else { //if the recievedPacket was not a request, it must have been data
-					ackPacket = new DatagramPacket(ackData, ackData.length, InetAddress.getLocalHost(), recievedPacket.getPort()); //acknowledge that packet
-//					printPacket(ackPacket, true);
-					receiveSocket.send(ackPacket);//acknowledge that packet
-
-					if (recievedPacket.getPort() == 69) { //If the data came from the server, it must be going to client
-						recievedPacket.setPort(22); //Set the packet's port to the client port
-					} else if(recievedPacket.getPort()==22){ //The data must have come from the client, so it is going to the server
-						recievedPacket.setPort(69); //Set the packets port to the server port
-					}
-					pendingElevatorUpdates.add(recievedPacket); //Enqueue the packet
-				}
-			}
-
+			socket = new DatagramSocket(SCHEDULER_PORT);
+			sendSocket = new DatagramSocket();
+			local = InetAddress.getLocalHost();
+		} catch (SocketException | UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//if scheduler sends first
+	public void sendElevatorMessage(ElevatorMessage em, int elevatorPort) {
+		byte message[] = em.toByteArray();
+		
+		DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, elevatorPort);
+		
+		try {
+			
+			System.out.println("Time: " + LocalTime.now());
+			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to Elevator " + elevatorPort + "\n");
+			
+			sendSocket.send(packetToSend);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
+	
+	private void receiveMessages() {
+		while(true) {
+			DatagramPacket packetToReceive = new DatagramPacket(new byte[MESSAGE_SIZE_LIMIT], MESSAGE_SIZE_LIMIT);
+			try {
+				
+
+				socket.receive(packetToReceive);
+				byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
+				
+				System.out.println("Time: " + LocalTime.now());
+				System.out.println(Thread.currentThread().getName() + " received " + new String(data) + "\n");
+				
+				//if elevator sends first
+				/*if(Arrays.equals(data, ELEVATOR_MESSAGE_PROMPT)) {
+					ElevatorMessage em = scheduler.getElevatorMessage(packetToReceive.getPort());
+					if(em != null) {
+						byte message[] = em.toByteArray();
+						socket.send(new DatagramPacket(message, message.length, packetToReceive.getAddress(), packetToReceive.getPort()));
+						continue;
+					}
+				}
+				else {
+					if(data[0] == ELEVATOR_UPDATE_SIGNATURE) {
+						ElevatorUpdate eu = new ElevatorUpdate(data);
+						scheduler.receiveElevatorUpdate(eu);
+					}
+					else if(data[0] == ELEVATOR_MESSAGE_SIGNATURE) {
+						ElevatorMessage em = new ElevatorMessage(data);
+						scheduler.receiveElevatorMessage(em);
+					}
+				}
+				socket.send(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));*/
+				
+				if(Arrays.equals(data, ACK_MESSAGE)) continue;
+				
+				//if scheduler sends first
+				if(data[0] == ELEVATOR_UPDATE_SIGNATURE) {
+					ElevatorUpdate eu = new ElevatorUpdate(data);
+					scheduler.receiveElevatorUpdate(eu, packetToReceive.getPort());
+				}
+				else if(data[0] == ELEVATOR_MESSAGE_SIGNATURE) {
+					ElevatorMessage em = new ElevatorMessage(data);
+					scheduler.receiveElevatorMessage(em);
+				}
+				
+				System.out.println("Time: " + LocalTime.now());
+				System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to " + (packetToReceive.getPort() == FLOOR_PORT? "floor": ("Elevator " + packetToReceive.getPort())) + ".\n");
+				
+				socket.send(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
+				
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
 	/**
 	 * Continuously checks for updates from elevators and notifies the scheduler
 	 */
 	@Override
 	public void run() {
-		while(true) {
-		scheduler.readElevatorState();
-		}
+		receiveMessages();
 	}	
 }
