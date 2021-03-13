@@ -15,7 +15,7 @@ import java.util.Arrays;
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-public class ElevatorReciever implements Runnable{
+public class ElevatorReceiver implements Runnable{
 	
 	private static final int SCHEDULER_PORT = 50;
 	
@@ -35,17 +35,17 @@ public class ElevatorReciever implements Runnable{
 	private static final String RECEIVER = "Elevator Receiver Thread";*/
 	
 	/**
-	 * The elevator associated with this reciever
+	 * The elevator associated with this receiver
 	 */
 	private Elevator elevator;
-
+	private String elevatorTest;
 
 	/**
 	 * Constructor for class ElevatorReciever
 	 * @param elevator
 	 * @param scheduler
 	 */
-	public ElevatorReciever(Elevator elevator, int port) {
+	public ElevatorReceiver(Elevator elevator, int port) {
 		this.elevator = elevator;
 		elevatorPort = port;
 		try {
@@ -94,9 +94,17 @@ public class ElevatorReciever implements Runnable{
 	}
 	
 	/**
+	 * 
+	 * @return the message received by the scheduler
+	 */
+	public String getElevatorTest() {
+		return elevatorTest;
+	}
+	
+	/**
 	 * Continuously receives UDP messages and responds appropriately
 	 */
-	private void receiveMessages() {
+	public void receiveMessages() {
 
 			while(true) {
 				//receives a UDP message
@@ -112,6 +120,8 @@ public class ElevatorReciever implements Runnable{
 						
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " received " + em + "\n");
+						elevatorTest = "Elevator 1 received "+em;
+						System.out.println("TEST 1:" + elevatorTest);
 						
 						//if the incoming message is an ElevatorMessage, adds the request to the elevator and sends back acknowledgement
 						elevator.addRequest(em);

@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class Elevator implements Runnable {
 	
-	private ElevatorReciever receiver;
+	private ElevatorReceiver receiver;
 	
 	private int port;
 	/**
@@ -91,7 +91,7 @@ public class Elevator implements Runnable {
 		
 		this.port = port;
 		
-		receiver = new ElevatorReciever(this, port);
+		receiver = new ElevatorReceiver(this, port);
 		
 		Thread  receiverThread = new Thread(receiver, "Elevator Receiver " + port);
 		receiverThread.start();
@@ -102,6 +102,9 @@ public class Elevator implements Runnable {
 		return port;
 	}
 	
+	public ElevatorReceiver requestElevatorReceiver() {
+		return receiver;
+	}
 	
 	
 	/**
