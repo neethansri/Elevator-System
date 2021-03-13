@@ -17,9 +17,20 @@ ElevatorSystem.java - A class used to create the threads and run them
 
 ElevtorTest.java - JUnit for testing the Elevator, Floor and Scheduler class
 
+ElevatorReceiver.java - A class used to receive events from the scheduler and updates elevator list
+
+ElevatorState.java - Enum class for states of the elevator class
+
+ElevatorUpdate.java - A message class used by the elevator subsystem to send updates about its location and direction to the scheduler
+
 Floor.java -  The Floor class used to read in inputs from a file and send it to the Elevator class through the Scheduler class and receive Elevator status from Elevator class
 
 Scheduler.java - The Scheduler class used for communication channel between Elevator and Floor. Keeps track of all previous and current request from Floor and Elevator.
+
+SchedulerReciever.java -  Thread in the Scheduler subsystem that recieves updates from the elevators and notifies the scheduler
+
+SchedulerState.java - Enum used to represent scheduler states
+
 
 -----------------------------------------------------------------------------------------------------------
 SET UP INSTRUCTIONS
