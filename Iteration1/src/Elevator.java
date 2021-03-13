@@ -9,6 +9,10 @@ import java.util.*;
  * @author Neethan Sriranganathan 101082581
  */
 public class Elevator implements Runnable {
+	
+	private ElevatorReceiver receiver;
+	
+	private int port;
 	/**
 	 * The floor that the elevator will initially start at
 	 */
@@ -25,11 +29,7 @@ public class Elevator implements Runnable {
 	private Set<Integer> floorsToVisit;
 	
 	private List<Integer> passengerDestinations;
-	
-	/**
-	 * The scheduler giving this elevator requests
-	 */
-	private Scheduler scheduler;
+
 	/**
 	 * The direction of the elevator
 	 */
@@ -80,8 +80,7 @@ public class Elevator implements Runnable {
 	 * 
 	 * @param scheduler The scheduler responsible for giving this elevator requests
 	 */
-	public Elevator(Scheduler scheduler) {
-		this.scheduler = scheduler;
+	public Elevator(int port) {
 		direction = ElevatorDirection.STOPPED;
 		floor = INITIAL_FLOOR;
 		currentState = ElevatorState.STOPPED;
@@ -89,8 +88,23 @@ public class Elevator implements Runnable {
 		passengerDestinations = new ArrayList<>();
 		floorsToVisit = new HashSet<>();
 		floorsTravelledWithoutStopping = 0;
+		
+		this.port = port;
+		
+		receiver = new ElevatorReceiver(this, port);
+		
+		Thread  receiverThread = new Thread(receiver, "Elevator Receiver " + port);
+		receiverThread.start();
+
 	}
 	
+	public int getPort() {
+		return port;
+	}
+	
+	public ElevatorReceiver requestElevatorReceiver() {
+		return receiver;
+	}
 	
 	
 	/**
@@ -197,7 +211,6 @@ public class Elevator implements Runnable {
 	 */
 	@Override
 	public void run() {
-		
 		while(true) {
 			switch(currentState) {
 				case STOPPED:	
@@ -212,7 +225,7 @@ public class Elevator implements Runnable {
 						System.out.println(Thread.currentThread().getName() + " is starting to move towards floor " + floor + "\n");
 						
 						//tell the scheduler that its moving
-						scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
+						receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString()));
 						
 						//sleep for the amount of time until the elevator approaches the next approach point
 						try {
@@ -237,7 +250,7 @@ public class Elevator implements Runnable {
 					removeFloorToVisit(floor);
 					
 					//tell the scheduler that its stopping
-					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString()));
 					
 					//sleep for the amount of time until the elevator decelerates and stops at the floor + the loading time while stopped
 					try {
@@ -263,7 +276,7 @@ public class Elevator implements Runnable {
 					floorsTravelledWithoutStopping++;
 					
 					//tell the scheduler that its continuing
-					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString()));
 					
 					//sleep for the amount of time until the elevator reaches the next approach point;
 					try {

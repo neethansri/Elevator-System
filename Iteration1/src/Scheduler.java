@@ -1,12 +1,7 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.time.LocalTime;
 import java.util.*;
 /**
+ * Models the scheduler state machine.
  * @author Solan Siva 101067491
  * @author Ben Baggs 101122318
  * @author Vijay Ramalingom 101073072
@@ -14,145 +9,198 @@ import java.util.*;
  * @author Neethan Sriranganathan 101082581
  */
 public class Scheduler implements Runnable {
-	private DatagramSocket receiveSocket, socket;
-	private DatagramPacket recievedPacket, ackPacket;
-
-	private List<ElevatorMessage> fromFloor, toElevator;
-	private String floorTest, elevatorTest, schedulerTest;
-	private ElevatorMessage floorinfo;
-	private List<ElevatorUpdate> pendingElevatorUpdates;
 	
-	private SchedulerState currentState;
+	/**
+	 * A data structure containing the port numbers of all elevators, and their most recent update (which includes location, direction, etc...)
+	 */
+	private Map<Integer, ElevatorUpdate> elevators;
+	/**
+	 * A queue to hold incoming requests from the floor subsystem
+	 */
+	private Queue<ElevatorMessage> pendingRequests;
+	/**
+	 * The SchedulerRecieverObject that handles UDP communication for the scheduler subsystem
+	 */
+	private SchedulerReceiver receiver;
+	/**
+	 * All the well-known port numbers of the elevators
+	 */
+	private static final List<Integer> ELEVATOR_PORT_NUMBERS = new ArrayList<>(Arrays.asList(1,2,3,4,5));
+	/**
+	 * The lowest floor that the elevators can service
+	 */
+	private static final int BOTTOM_FLOOR = 1;
+	/**
+	 * The highest floor that the elevators can service
+	 */
+	private static final int TOP_FLOOR = 7;
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object
 	 */
 	public Scheduler() {
-		fromFloor = new ArrayList<>();
-		toElevator = new ArrayList<>();
-		pendingElevatorUpdates = new ArrayList<>();
-		currentState = SchedulerState.IDLE;
+		
+		elevators = new HashMap<>();
+		pendingRequests = new LinkedList<>();
+		
+		//initializes the map that keeps track of the elevators with the elevators' initial status
+		for(Integer port: ELEVATOR_PORT_NUMBERS) {
+			elevators.put(port, ElevatorUpdate.initialStatus());
+		}
+		
+		//creates and runs a SchedulerReceiver object to handle UDP communication
+		receiver = new SchedulerReceiver(this);
+		Thread receiverThread = new Thread(receiver, "Scheduler Receiver");
+		receiverThread.start();
+	}
+	
+	public SchedulerReceiver requestSchedulerReceiver() {
+		return receiver;
 	}
 				
+
 	/**
+	 * Inserts an ElevatorMessage into the scheduler's list of pending requests if it is valid
 	 * 
-	 * @return the message sent from the floor to the scheduler
+	 * @param em The request to be added to the list of pending requests
 	 */
-	public String getFloorTest() {
-		return floorTest;
+	public void receiveElevatorMessage(ElevatorMessage em) {
+		
+		//if the request comes from a floor that doesn't exist, it is discarded
+		//if the request includes a passenger pressing a car button that doesn't exist, it is discarded
+		if(em.getFloor() > TOP_FLOOR || em.getFloor() < BOTTOM_FLOOR || em.getButton() > TOP_FLOOR || em.getButton() < BOTTOM_FLOOR) { 
+			System.out.println("Time: " + LocalTime.now());
+			System.out.println(Thread.currentThread().getName() + " discarded the incoming request because it referenced a floor that doesn't exist.\n");
+			return;
+		}
+		
+		//if the request is valid, add it to the list of pending requests
+		synchronized(pendingRequests) {
+			pendingRequests.add(em);
+			pendingRequests.notifyAll();
+		}
 	}
 
 	/**
-	 * 
-	 * @return the message received by the elevator and sent back to the scheduler
+	 * Updates the map that keeps track of elevators with the incoming ElevatorUpdate 
+	 * @param eu The most recent update from the elevator
+	 * @param port The port number of the elevator
 	 */
-	public String getElevatorTest() {
-		return elevatorTest;
-	}
-
-	/**
-	 * 
-	 * @return the message received from the elevator by the scheduler and sent to
-	 *         the floor
-	 */
-	public String getSchedulerTest() {
-		return schedulerTest;
+	public void receiveElevatorUpdate(ElevatorUpdate eu, int port) {
+		synchronized(elevators) {
+			elevators.replace(port, eu);
+		}
+		
+		//passes the elevator update to the floor, so that the floor lamps can activate if an elevator is approaching
+		receiver.sendElevatorUpdate(eu);
 	}
 	
-	public List<ElevatorMessage> getfromFloor(){
-		return fromFloor;
-	}
-
 	/**
-	 * the floor thread calls this method to send messages to the scheduler
-	 * 
-	 * @param floorinfo type ElevatorMessage
+	 * Returns the next requests from the list of pending requests
+	 * @return The next request
 	 */
-	public synchronized void sendEvent(ElevatorMessage floorInfo) {
-		// adding floorInfo to the fromFloor arrayList
-		fromFloor.add(floorInfo);
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println(
-				"The " + Thread.currentThread().getName() + " Subsystem sent: " + floorInfo + ", to the scheduler \n");
-		floorTest = "Floor SENT " + floorInfo;
-		notifyAll(); // notifyAll threads that are not awake
-	}
-
-	/**
-	 * the elevator thread calls this method to read messages from the scheduler and
-	 * send them back
-	 */
-	public synchronized ElevatorMessage getEvent() {
-		// while toElevator is empty
-		while (toElevator.isEmpty() == true) {
-			try {
-				wait(); // wait for it to fill
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+	private ElevatorMessage getNextPendingRequest() {
+		synchronized(pendingRequests) {
+			while(pendingRequests.isEmpty()) {
+				try {
+					pendingRequests.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
+			return pendingRequests.remove();
 		}
-		
-		ElevatorMessage message = toElevator.get(0);
-		toElevator.remove(0);
-		notifyAll();
-		return message;
-	}
-
-	public synchronized void updateElevatorState(ElevatorUpdate eu) {
-		pendingElevatorUpdates.add(eu);
-		currentState = SchedulerState.PENDING;
-		notifyAll();
 	}
 	
-	public synchronized void readElevatorState() {
-		while(pendingElevatorUpdates.isEmpty()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		ElevatorUpdate eu = pendingElevatorUpdates.get(0);
-		pendingElevatorUpdates.remove(0);
-		
-		if(pendingElevatorUpdates.isEmpty()) currentState = SchedulerState.IDLE;
-		
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println(Thread.currentThread().getName() + " has been notified that the elevator is at floor " + eu.getFloor() + ", has "
-				+ eu.getPassengers() + " passengers, and has direction "
-				+ eu.getDirection() + "\n");
-		notifyAll();
-	}
-
 	/**
-	 * the scheduler thread passes messages from floor to elevator
+	 * Makes a list of the port numbers of elevators going in the right direction to service a request
+	 * @param elevators The map associating elevators with their locations, directions, etc...
+	 * @param em The request to be serviced
+	 * @return A list of the port numbers of elevators going in the right direction to service a request
 	 */
-	public synchronized void handleFloorMessages() {
-		// while fromFloor array is empty
-		while (fromFloor.isEmpty()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+	private List<Integer> getElevatorsGoingInRightDirection(Map<Integer, ElevatorUpdate> elevators, ElevatorMessage em){
+		List<Integer> elevatorsGoingInRightDirection = new ArrayList<>();
+		
+		for(Integer port: ELEVATOR_PORT_NUMBERS) {
+			ElevatorUpdate eu = elevators.get(port);
+			if(em.getDirection() == ElevatorDirection.DOWN) {
+				if(eu.getFloor() >= em.getFloor() && eu.getDirection() == ElevatorDirection.DOWN) {
+					elevatorsGoingInRightDirection.add(port);
+				}
+			}
+			else if(em.getDirection() == ElevatorDirection.UP) {
+				if(eu.getFloor() <= em.getFloor() && eu.getDirection() == ElevatorDirection.UP) {
+					elevatorsGoingInRightDirection.add(port);
+				}
 			}
 		}
-		toElevator.add(fromFloor.get(0));
-		System.out.println("Time: " + LocalTime.now());
-		System.out.println("The " + Thread.currentThread().getName() + " Subsystem passed: " + fromFloor.get(0)
-				+ ", from the floor to the elevator \n");
-		fromFloor.remove(0);
-		notifyAll(); // notify threads that are not awake
+		return elevatorsGoingInRightDirection;
 	}
-
+	
+	/**
+	 * Returns the elevator out of a specified list that has the least passengers
+	 * @param elevators The map associating elevators with their locations, passengers, etc...
+	 * @param suitableElevators The list of elevator port numbers to be chosen from
+	 * @return The port number of the chosen elevator
+	 */
+	private int getElevatorWithLeastPassengers(Map<Integer, ElevatorUpdate> elevators, List<Integer> suitableElevators) {
+		int leastPassengersPort = -1;
+		for(Integer port: suitableElevators) {
+			if(leastPassengersPort == -1) leastPassengersPort = port;
+			else {
+				if(elevators.get(port).getPassengers() < elevators.get(leastPassengersPort).getPassengers()) {
+					leastPassengersPort = port;
+				}
+			}
+		}
+		return leastPassengersPort;
+	}
+	
+	/**
+	 * Chooses an elevator to service a given request.
+	 * @param em The request to be serviced
+	 */
+	private void assignElevatorToRequest(ElevatorMessage em) {
+		
+		//creates a copy of the elevator map so the critical section can be short
+		Map<Integer, ElevatorUpdate> elevatorMapCopy;
+		synchronized(elevators) {
+			elevatorMapCopy = Map.copyOf(elevators);
+		}
+		
+		//creates a list of all elevators going in the right direction to service the request
+		List<Integer> elevatorsGoingInRightDirection = getElevatorsGoingInRightDirection(elevatorMapCopy, em);
+		
+		int chosenElevator;
+		if(!elevatorsGoingInRightDirection.isEmpty()) {
+			//if there are elevators going in the right direction, choose the one with the least passengers out of those elevators
+			chosenElevator = getElevatorWithLeastPassengers(elevatorMapCopy, elevatorsGoingInRightDirection);
+		}
+		else {
+			//if there are no elevators going in the right direction, choose the elevator with the least passengers out of all elevators
+			chosenElevator = getElevatorWithLeastPassengers(elevatorMapCopy, ELEVATOR_PORT_NUMBERS);
+		}
+		
+		//sends the request to the chosen elevator
+		receiver.sendElevatorMessage(em, chosenElevator);
+	}
+	
+	/**
+	 * Continuously processes incoming requests from the floor subsystem
+	 */
+	public void processRequests() {
+		while(true) {
+			assignElevatorToRequest(getNextPendingRequest());
+		}
+	}
+	
 	@Override
 	/**
 	 * run method in Scheduler thread used to handle the events from from floor to
-	 * elevator and elevator to floor
+	 * elevator
 	 */
 	public void run() {
-		while (true) {
-			handleFloorMessages();
-		}
+		processRequests();
 	}
 
 }
