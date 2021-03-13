@@ -84,7 +84,7 @@ public class FloorReciever implements Runnable{
 		try {
 			
 			System.out.println("Time: " + LocalTime.now());
-			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to scheduler\n");
+			System.out.println(Thread.currentThread().getName() + " sent " + em + " to scheduler\n");
 			
 			sendPacket(packetToSend);
 			
@@ -110,11 +110,13 @@ public class FloorReciever implements Runnable{
 					
 					byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
 					
-					System.out.println("Time: " + LocalTime.now());
-					System.out.println(Thread.currentThread().getName() + " received " + new String(data) + "\n");
-					
 					if(!Arrays.equals(data, ACK_MESSAGE)) {
-						//if the incoming message is an ElevatorMessage, adds the request to the elevator and sends back acknowledgement
+						
+						ElevatorUpdate eu = new ElevatorUpdate(data);
+						
+						System.out.println("Time: " + LocalTime.now());
+						System.out.println(Thread.currentThread().getName() + " received " + eu + "\n");
+						
 
 						//process elevator update
 						
@@ -123,6 +125,11 @@ public class FloorReciever implements Runnable{
 						
 							sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
 						
+					}
+					
+					else {
+						System.out.println("Time: " + LocalTime.now());
+						System.out.println(Thread.currentThread().getName() + " received " + new String(data) + "\n");
 					}
 					
 				} catch (IOException e) {

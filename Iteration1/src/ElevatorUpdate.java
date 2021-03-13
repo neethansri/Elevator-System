@@ -105,7 +105,7 @@ public class ElevatorUpdate{
 	 * formats the contents of the message as a string
 	 */
 	public String toString() {
-		return floor + direction.toString() + time;
+		return time + " " + floor + " " + passengers + " " + direction;
 	}
 	
 	public byte[] toByteArray() {

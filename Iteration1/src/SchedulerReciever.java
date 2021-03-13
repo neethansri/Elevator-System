@@ -69,7 +69,7 @@ public class SchedulerReciever implements Runnable{
 		try {
 			
 			System.out.println("Time: " + LocalTime.now());
-			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to Elevator " + elevatorPort + "\n");
+			System.out.println(Thread.currentThread().getName() + " sent " + em + " to Elevator " + elevatorPort + "\n");
 			
 			sendPacket(packetToSend);
 			
@@ -77,6 +77,23 @@ public class SchedulerReciever implements Runnable{
 			e.printStackTrace();
 		}
 	}
+	
+		public void sendElevatorUpdate(ElevatorUpdate eu) {
+			byte message[] = eu.toByteArray();
+			
+			DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, FLOOR_PORT);
+			
+			try {
+				
+				System.out.println("Time: " + LocalTime.now());
+				System.out.println(Thread.currentThread().getName() + " sent " + eu + " to floor subsystem.\n");
+				
+				sendPacket(packetToSend);
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	
 	private void receiveMessages() {
 		while(true) {
@@ -86,9 +103,6 @@ public class SchedulerReciever implements Runnable{
 
 				socket.receive(packetToReceive);
 				byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
-				
-				System.out.println("Time: " + LocalTime.now());
-				System.out.println(Thread.currentThread().getName() + " received " + new String(data) + "\n");
 				
 				//if elevator sends first
 				/*if(Arrays.equals(data, ELEVATOR_MESSAGE_PROMPT)) {
@@ -116,10 +130,18 @@ public class SchedulerReciever implements Runnable{
 				//if scheduler sends first
 				if(data[0] == ELEVATOR_UPDATE_SIGNATURE) {
 					ElevatorUpdate eu = new ElevatorUpdate(data);
+					
+					System.out.println("Time: " + LocalTime.now());
+					System.out.println(Thread.currentThread().getName() + " received " + eu + "\n");
+					
 					scheduler.receiveElevatorUpdate(eu, packetToReceive.getPort());
 				}
 				else if(data[0] == ELEVATOR_MESSAGE_SIGNATURE) {
 					ElevatorMessage em = new ElevatorMessage(data);
+					
+					System.out.println("Time: " + LocalTime.now());
+					System.out.println(Thread.currentThread().getName() + " received " + em + "\n");
+					
 					scheduler.receiveElevatorMessage(em);
 				}
 				

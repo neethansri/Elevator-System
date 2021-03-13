@@ -114,6 +114,9 @@ public class Scheduler implements Runnable {
 		synchronized(elevators) {
 			elevators.replace(port, eu);
 		}
+		
+		//passes the elevator update to the floor, so that the floor lamps can activate if an elevator is approaching
+		receiver.sendElevatorUpdate(eu);
 	}
 	
 	/**

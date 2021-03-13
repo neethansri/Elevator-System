@@ -84,7 +84,7 @@ public class ElevatorReciever implements Runnable{
 		try {
 			
 			System.out.println("Time: " + LocalTime.now());
-			System.out.println(Thread.currentThread().getName() + " sent " + new String(message) + " to scheduler.\n");
+			System.out.println(Thread.currentThread().getName() + " sent " + eu + " to scheduler.\n");
 			
 			sendPacket(packetToSend);
 			
@@ -105,12 +105,16 @@ public class ElevatorReciever implements Runnable{
 					socket.receive(packetToReceive);
 					byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
 					
-					System.out.println("Time: " + LocalTime.now());
-					System.out.println(Thread.currentThread().getName() + " received " + new String(data) + "\n");
 					
 					if(!Arrays.equals(data, ACK_MESSAGE)) {
+						
+						ElevatorMessage em = new ElevatorMessage(data);
+						
+						System.out.println("Time: " + LocalTime.now());
+						System.out.println(Thread.currentThread().getName() + " received " + em + "\n");
+						
 						//if the incoming message is an ElevatorMessage, adds the request to the elevator and sends back acknowledgement
-						elevator.addRequest(new ElevatorMessage(data));
+						elevator.addRequest(em);
 						
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to the scheduler.\n");

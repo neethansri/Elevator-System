@@ -95,11 +95,11 @@ public class ElevatorMessage {
 	public ElevatorDirection convertDirection(String dir) {
 		// if cases to cover all the cases
 		if (dir.equals("UP")) {
-			direction = direction.UP;
+			direction = ElevatorDirection.UP;
 		} else if (dir.equals("DOWN")) {
-			direction = direction.DOWN;
+			direction = ElevatorDirection.DOWN;
 		} else {
-			direction = direction.STOPPED;
+			direction = ElevatorDirection.STOPPED;
 		}
 		return direction;
 	}
