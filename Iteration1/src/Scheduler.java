@@ -57,6 +57,11 @@ public class Scheduler implements Runnable {
 	public SchedulerReceiver requestSchedulerReceiver() {
 		return receiver;
 	}
+	
+	public String getElevatorMessage() {
+		
+		return pendingRequests.peek().toString();
+	}
 				
 
 	/**

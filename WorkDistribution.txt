@@ -2,11 +2,11 @@ Work Distributon for Iteration 2
 
 scheduler.java & floor.java - Ben Baggs and Solan Siva and Mohammad Issa
 
-elevatorMessage.java & elevatorDirection - Neethan Sriranganathan and Vijay Ramalingom
+ElevatorMessage.java & ElevatorDirection - Neethan Sriranganathan and Vijay Ramalingom
 
-Junit testing and elevator.java - Mohammad Issa and Benn Baggs
+Elevator.java - Mohammad Issa and Benn Baggs
 
-UML, Sequence Diagram and elevator.java - Vijay Ramalingom & Neethan Sriranganathan
+UML, Sequence Diagram and Elevator.java - Vijay Ramalingom & Neethan Sriranganathan
 
 State Machines - Neethan Sriranganathan & Solan Siva
 
@@ -15,3 +15,15 @@ ElevatorReceiver & Elevator State - Ben Baggs & Mohammad Issa
 Scheduler Receiver & Scheduler State - Ben Baggs & Vijay Ramalingom
 
 ElevatorUpdate - Solan Siva - Ben Baggs
+
+FloorReceiver - Ben Baggs & Vijay Ramalingom
+
+ElevatorTest - Modhammad Issa, Solan Siva, Neethan Sriranganathan
+
+ElevatorSubsystem - Ben Baggs
+
+FloorSubsystem - Solan Siva
+
+SchedulerSubsystem - Mohammad Issa
+
+ElevatorUpdate - Ben Baggs & Neethan Sriranganathan

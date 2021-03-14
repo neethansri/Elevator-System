@@ -118,28 +118,7 @@ public class SchedulerReceiver implements Runnable{
 			}
 		}
 		
-	public void receiveTest() {
-		DatagramPacket packetToReceive = new DatagramPacket(new byte[MESSAGE_SIZE_LIMIT], MESSAGE_SIZE_LIMIT);
-		try {
-			socket.receive(packetToReceive);
-			byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
-			
-			ElevatorMessage em = new ElevatorMessage(data);
-			System.out.println("fsfsufhsufhjsughfghiuodghujfhgjudfhgjhfdsgiousfhiuofhsgpiohdsgopfdsgiouhigohfgiopsfdsg\n");
-			System.out.println("Time: " + LocalTime.now());
-			System.out.println(Thread.currentThread().getName() + " received (em) " + em + "\n");
-			schedulerTest1 = "Scheduler received " + em;
-			System.out.println("TEST 1:" + schedulerTest1);
-			
-			scheduler.receiveElevatorMessage(em);
-			sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
-			
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-			
-	}
+
 	
 	public void receiveMessages() {
 		while(true) {
@@ -209,7 +188,7 @@ public class SchedulerReceiver implements Runnable{
 	 */
 	@Override
 	public void run() {
-		receiveTest();
+		//receiveTest();
 		receiveMessages();
 
 	}	

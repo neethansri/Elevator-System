@@ -31,7 +31,7 @@ public class ElevatorTest {
 
 		// starting the threads
 		floorThread.start();
-		elevatorThread.start();
+		//elevatorThread.start();
 		schedulerThread.start();
 	}
 
@@ -49,22 +49,23 @@ public class ElevatorTest {
 	
 	@Test
 	public void schedulerTest1() {
-		schedulerReceiver.receiveTest();
-		assertEquals("Scheduler received 14:05:15.0 2 UP 4", schedulerReceiver.getSchedulerTest1());
+		assertEquals("14:05:15.0 2 UP 4", scheduler.getElevatorMessage());
 
 	}
+	
+	
 	@Test
 	public void schedulerTest2() {
 		schedulerReceiver.sendElevatorMessage(floorInfo, 1);
 		assertEquals("Scheduler sent 14:05:15.0 2 UP 4 to Elevator 1", schedulerReceiver.getSchedulerTest2());
 
 	}
-
-//	@Test
-//	public void elevatorTest() {
-//		elevatorReceiver.receiveMessages();
-//		assertEquals("Elevator 1 received 14:05:15.1 1 UP 7", elevatorReceiver.getElevatorTest());
-//	}
+	
+	@Test
+	public void zelevatorTest() throws InterruptedException {
+		elevator.addRequest(floorInfo);
+		assertEquals(2, elevator.getMessage());
+	}
 	
 
 }
