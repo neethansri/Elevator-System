@@ -15,7 +15,7 @@ import java.util.Arrays;
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-public class FloorReciever implements Runnable{
+public class FloorReceiver implements Runnable{
 	
 	private static final int SCHEDULER_PORT = 50;
 	
@@ -32,17 +32,17 @@ public class FloorReciever implements Runnable{
 	private static final String SENDER = "Floor Update Prompt Thread";
 	private static final String RECEIVER = "Floor Receiver Thread";*/
 
+	private String floorTest;
+	
 	private Floor floor;
 	
 	int floorPort;
 
 
 	/**
-	 * Constructor for class ElevatorReciever
-	 * @param elevator
-	 * @param scheduler
+	 * Constructor for class FloorReciever
 	 */
-	public FloorReciever(Floor floor, int port) {
+	public FloorReceiver(Floor floor, int port) {
 		this.floor = floor;
 		floorPort = port;
 		try {
@@ -71,6 +71,14 @@ public class FloorReciever implements Runnable{
 		}
 	}*/
 	
+	/**
+	 * 
+	 * @return the message sent from the floor to the scheduler
+	 */
+	public String getFloorTest1() {
+		return floorTest;
+	}
+	
 	private synchronized void sendPacket(DatagramPacket packet) throws IOException {
 		socket.send(packet);
 	}
@@ -85,7 +93,7 @@ public class FloorReciever implements Runnable{
 			
 			System.out.println("Time: " + LocalTime.now());
 			System.out.println(Thread.currentThread().getName() + " sent " + em + " to scheduler\n");
-			
+			floorTest = "Floor sent "+ em +" to the scheduler";
 			sendPacket(packetToSend);
 			
 			
@@ -97,13 +105,12 @@ public class FloorReciever implements Runnable{
 	/**
 	 * Continuously receives UDP messages and responds appropriately
 	 */
-	private void receiveMessages() {
+	public void receiveMessages() {
 
 			while(true) {
 				//receives a UDP message
 				DatagramPacket packetToReceive = new DatagramPacket(new byte[MESSAGE_SIZE_LIMIT], MESSAGE_SIZE_LIMIT);
 				try {
-					
 					
 					socket.receive(packetToReceive);
 					
@@ -123,7 +130,7 @@ public class FloorReciever implements Runnable{
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to the scheduler.\n");
 						
-							sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
+						sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
 						
 					}
 					
@@ -139,7 +146,7 @@ public class FloorReciever implements Runnable{
 	}
 
 	/**
-	 * Continuously gets messages from the scheduler and notifies the elevator
+	 * Continuously gets messages from the scheduler and notifies the floor
 	 */
 	@Override
 	public void run() {

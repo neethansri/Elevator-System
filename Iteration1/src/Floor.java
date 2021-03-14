@@ -14,7 +14,7 @@ import java.time.LocalTime;
  */
 public class Floor implements Runnable {
 
-	private FloorReciever receiver;
+	private FloorReceiver receiver;
 
 	/**
 	 * floor class constructor used to initialize floor
@@ -23,10 +23,14 @@ public class Floor implements Runnable {
 	 */
 	public Floor(int port) {
 
-		receiver = new FloorReciever(this, port);
+		receiver = new FloorReceiver(this, port);
 		
 		Thread receiverThread = new Thread(receiver, "Floor Receiver");
 		receiverThread.start();
+	}
+	
+	public FloorReceiver requestFloorReceiver() {
+		return receiver;
 	}
 
 	/**
