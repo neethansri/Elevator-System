@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class Elevator implements Runnable {
 	
-	private ElevatorReciever receiver;
+	private ElevatorReceiver receiver;
 	
 	private int port;
 	/**
@@ -43,6 +43,12 @@ public class Elevator implements Runnable {
 	 * The number of floors that the elevator has travelled without stopping at a floor.
 	 * This is useful when calculating the elevator's speed and acceleration
 	 */
+	
+	public int testVariable;
+	/**
+	 * This string will be used to hold the most recent event for testing purposes
+	 */
+	
 	private int floorsTravelledWithoutStopping;
 	/**
 	 * The acceleration rate of the elevator in m/s^2.
@@ -91,7 +97,7 @@ public class Elevator implements Runnable {
 		
 		this.port = port;
 		
-		receiver = new ElevatorReciever(this, port);
+		receiver = new ElevatorReceiver(this, port);
 		
 		Thread  receiverThread = new Thread(receiver, "Elevator Receiver " + port);
 		receiverThread.start();
@@ -102,7 +108,14 @@ public class Elevator implements Runnable {
 		return port;
 	}
 	
+	public ElevatorReceiver requestElevatorReceiver() {
+		return receiver;
+	}
 	
+	public int getMessage() {
+		
+		return testVariable;
+	}
 	
 	/**
 	 * Calculates the time required for the elevator to move to the approach point for the floor a specified number of floors away from a full stop
@@ -160,7 +173,10 @@ public class Elevator implements Runnable {
 	 */
 	public synchronized void addRequest(ElevatorMessage message) {
 		if(!pendingMessages.contains(message)) {
+			testVariable = message.getFloor();
+			System.out.println("hey"+ testVariable);
 			pendingMessages.add(message);
+			System.out.println(pendingMessages.size());
 			floorsToVisit.add(message.getFloor());
 		}
 	}
