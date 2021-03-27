@@ -21,15 +21,11 @@ public class Scheduler implements Runnable {
 	/**
 	 * The SchedulerRecieverObject that handles UDP communication for the scheduler subsystem
 	 */
-	private SchedulerReciever receiver;
+	private SchedulerReceiver receiver;
 	/**
 	 * All the well-known port numbers of the elevators
 	 */
 	private static final List<Integer> ELEVATOR_PORT_NUMBERS = new ArrayList<>(Arrays.asList(1,2,3,4,5));
-	/**
-	 * For the JUnit tests
-	 */
-	private String floorTest, elevatorTest, schedulerTest;
 	/**
 	 * The lowest floor that the elevators can service
 	 */
@@ -55,35 +51,20 @@ public class Scheduler implements Runnable {
 		}
 		
 		//creates and runs a SchedulerReceiver object to handle UDP communication
-		receiver = new SchedulerReciever(this);
+		receiver = new SchedulerReceiver(this);
 		Thread receiverThread = new Thread(receiver, "Scheduler Receiver");
 		receiverThread.start();
 	}
+	
+	public SchedulerReceiver requestSchedulerReceiver() {
+		return receiver;
+	}
+	
+	public String getElevatorMessage() {
+		
+		return pendingRequests.peek().toString();
+	}
 				
-	/**
-	 * 
-	 * @return the message sent from the floor to the scheduler
-	 */
-	public String getFloorTest() {
-		return floorTest;
-	}
-
-	/**
-	 * 
-	 * @return the message received by the elevator and sent back to the scheduler
-	 */
-	public String getElevatorTest() {
-		return elevatorTest;
-	}
-
-	/**
-	 * 
-	 * @return the message received from the elevator by the scheduler and sent to
-	 *         the floor
-	 */
-	public String getSchedulerTest() {
-		return schedulerTest;
-	}
 
 	/**
 	 * Inserts an ElevatorMessage into the scheduler's list of pending requests if it is valid

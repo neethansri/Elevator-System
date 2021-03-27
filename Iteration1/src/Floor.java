@@ -1,10 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.time.LocalTime;
 /**
  * @author Solan Siva 101067491
  * @author Ben Baggs 101122318
@@ -14,9 +10,11 @@ import java.time.LocalTime;
  */
 public class Floor implements Runnable {
 
-	private FloorReciever receiver;
+
 	
 	private static final int TIME_BETWEEN_REQUESTS = 10000;
+
+	private FloorReceiver receiver;
 
 	/**
 	 * floor class constructor used to initialize floor
@@ -25,10 +23,14 @@ public class Floor implements Runnable {
 	 */
 	public Floor(int port) {
 
-		receiver = new FloorReciever(this, port);
+		receiver = new FloorReceiver(this, port);
 		
 		Thread receiverThread = new Thread(receiver, "Floor Receiver");
 		receiverThread.start();
+	}
+	
+	public FloorReceiver requestFloorReceiver() {
+		return receiver;
 	}
 
 	/**

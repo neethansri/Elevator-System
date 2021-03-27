@@ -15,9 +15,11 @@ import java.util.Arrays;
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-public class FloorReciever implements Runnable{
+public class ElevatorReceiver implements Runnable{
 	
 	private static final int SCHEDULER_PORT = 50;
+	
+	private int elevatorPort;
 	
 	private DatagramSocket socket;
 	
@@ -27,26 +29,27 @@ public class FloorReciever implements Runnable{
 	
 	private static final byte[] ACK_MESSAGE = "ack".getBytes();
 	
-	//if floor sends first
-	/*private static final byte[] ELEVATOR_UPDATE_PROMPT = "prompt".getBytes();
-	private static final String SENDER = "Floor Update Prompt Thread";
-	private static final String RECEIVER = "Floor Receiver Thread";*/
-
-	private Floor floor;
+	//if elevator sends first
+	/*private static final byte[] ELEVATOR_MESSAGE_PROMPT = "prompt".getBytes();
+	private static final String SENDER = "Elevator Request Prompt Thread";
+	private static final String RECEIVER = "Elevator Receiver Thread";*/
 	
-	int floorPort;
-
+	/**
+	 * The elevator associated with this receiver
+	 */
+	private Elevator elevator;
+	private String elevatorTest;
 
 	/**
 	 * Constructor for class ElevatorReciever
 	 * @param elevator
 	 * @param scheduler
 	 */
-	public FloorReciever(Floor floor, int port) {
-		this.floor = floor;
-		floorPort = port;
+	public ElevatorReceiver(Elevator elevator, int port) {
+		this.elevator = elevator;
+		elevatorPort = port;
 		try {
-			socket = new DatagramSocket(floorPort);
+			socket = new DatagramSocket(elevatorPort);
 			local = InetAddress.getLocalHost();
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -55,10 +58,10 @@ public class FloorReciever implements Runnable{
 		} 
 	}
 	
-	//if floor sends first
-	/*private synchronized void promptForElevatorUpdates() {
+	//if elevator sends first
+	/*private synchronized void promptForElevatorMessages() {
 		while(true) {
-			byte message[] = ELEVATOR_UPDATE_PROMPT;
+			byte message[] = ELEVATOR_MESSAGE_PROMPT;
 			
 			DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, SCHEDULER_PORT);
 			
@@ -75,19 +78,30 @@ public class FloorReciever implements Runnable{
 		socket.send(packet);
 	}
 	
-	public void sendElevatorMessage(ElevatorMessage em) {
-		
-		byte message[] = em.toByteArray();
-		
+	public void sendElevatorUpdate(ElevatorUpdate eu) {
+		byte message[] = eu.toByteArray();
 		DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, SCHEDULER_PORT);
-		
 		try {
 			
 			System.out.println("Time: " + LocalTime.now());
-			System.out.println(Thread.currentThread().getName() + " sent " + em + " to scheduler\n");
+			System.out.println(Thread.currentThread().getName() + " sent " + eu + " to scheduler.\n");
 			
 			sendPacket(packetToSend);
 			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void sendElevatorMessage(ElevatorMessage em) {
+		byte message[] = em.toByteArray();
+		DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, SCHEDULER_PORT);
+		try {
+			
+			System.out.println("Time: " + LocalTime.now());
+			System.out.println(Thread.currentThread().getName() + " sent " + em + " to scheduler.\n");
+			
+			sendPacket(packetToSend);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -95,43 +109,46 @@ public class FloorReciever implements Runnable{
 	}
 	
 	/**
+	 * 
+	 * @return the message received by the scheduler
+	 */
+	public String getElevatorTest() {
+		return elevatorTest;
+	}
+	
+	/**
 	 * Continuously receives UDP messages and responds appropriately
 	 */
-	private void receiveMessages() {
+	public void receiveMessages() {
 
 			while(true) {
 				//receives a UDP message
 				DatagramPacket packetToReceive = new DatagramPacket(new byte[MESSAGE_SIZE_LIMIT], MESSAGE_SIZE_LIMIT);
 				try {
-					
-					
 					socket.receive(packetToReceive);
-					
-					
 					byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
+					
 					
 					if(!Arrays.equals(data, ACK_MESSAGE)) {
 						
-						ElevatorUpdate eu = new ElevatorUpdate(data);
+						ElevatorMessage em = new ElevatorMessage(data);
 						
 						System.out.println("Time: " + LocalTime.now());
-						System.out.println(Thread.currentThread().getName() + " received " + eu + "\n");
+						System.out.println(Thread.currentThread().getName() + " received " + em + "\n");
+						elevatorTest = "Elevator 1 received "+em;
+						System.out.println("TEST 1:" + elevatorTest);
 						
-
-						//process elevator update
+						//if the incoming message is an ElevatorMessage, adds the request to the elevator and sends back acknowledgement
+						elevator.addRequest(em);
 						
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " sent an acknowledgement back to the scheduler.\n");
 						
-							sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));
 						
-					}
-					
-					else {
-						System.out.println("Time: " + LocalTime.now());
-						System.out.println(Thread.currentThread().getName() + " received " + new String(data) + "\n");
-					}
-					
+						sendPacket(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));	
+						
+						
+					}		
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -143,9 +160,9 @@ public class FloorReciever implements Runnable{
 	 */
 	@Override
 	public void run() {
-		//if floor sends first
+		//if elevator sends first
 		/*if(Thread.currentThread().getName().equals(SENDER)) {
-			promptForElevatorUpdates();
+			promptForElevatorMessages();
 		}
 		else {
 			receiveMessages();

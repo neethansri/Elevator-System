@@ -8,14 +8,14 @@ import java.time.LocalTime;
 import java.util.Arrays;
 
 /**
- * Thread in the Scheduler subsystem that recieves updates from the elevators and notifies the scheduler
+ * Thread in the Scheduler subsystem that receives updates from the elevators and notifies the scheduler
  * @author Solan Siva 101067491
  * @author Ben Baggs 101122318
  * @author Vijay Ramalingom 101073072
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-public class SchedulerReciever implements Runnable{
+public class SchedulerReceiver implements Runnable{
 
 	/**
 	 * The scheduler associated with this receiver
@@ -37,13 +37,14 @@ public class SchedulerReciever implements Runnable{
 	
 	private static final int FLOOR_PORT = 100;
 	
+	private String schedulerTest1, schedulerTest2;
 	
 	
 	/**
 	 * Constructor of class SchedulerReciever
-	 * @param scheduler The scheduler associated with this reciever
+	 * @param scheduler The scheduler associated with this receiver
 	 */
-	public SchedulerReciever(Scheduler scheduler) {
+	public SchedulerReceiver(Scheduler scheduler) {
 		this.scheduler = scheduler;
 		try {
 			socket = new DatagramSocket(SCHEDULER_PORT);
@@ -57,6 +58,24 @@ public class SchedulerReciever implements Runnable{
 		socket.send(packet);
 	}
 	
+	/**
+	 * 
+	 * @return the message received from the floor
+	 *         
+	 */
+	public String getSchedulerTest1() {
+		System.out.println("im here\n");
+		return schedulerTest1;
+	}
+	/**
+	 * 
+	 * @return the message sent to the elevator
+	 *         
+	 */
+	public String getSchedulerTest2() {
+		return schedulerTest2;
+	}
+	
 	//if scheduler sends first
 	public void sendElevatorMessage(ElevatorMessage em, int elevatorPort) {
 		byte message[] = em.toByteArray();
@@ -67,6 +86,9 @@ public class SchedulerReciever implements Runnable{
 			
 			System.out.println("Time: " + LocalTime.now());
 			System.out.println(Thread.currentThread().getName() + " sent " + em + " to Elevator " + elevatorPort + "\n");
+			
+			schedulerTest2 = "Scheduler sent " + em + " to Elevator " + elevatorPort;
+			System.out.println("TEST2: "+schedulerTest2);
 			
 			sendPacket(packetToSend);
 			
@@ -85,19 +107,20 @@ public class SchedulerReciever implements Runnable{
 				System.out.println("Time: " + LocalTime.now());
 				System.out.println(Thread.currentThread().getName() + " sent " + eu + " to floor subsystem.\n");
 				
+				
 				sendPacket(packetToSend);
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		
+
 	
-	private void receiveMessages() {
+	public void receiveMessages() {
 		while(true) {
 			DatagramPacket packetToReceive = new DatagramPacket(new byte[MESSAGE_SIZE_LIMIT], MESSAGE_SIZE_LIMIT);
 			try {
-				
-
 				socket.receive(packetToReceive);
 				byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
 				
@@ -108,7 +131,7 @@ public class SchedulerReciever implements Runnable{
 					ElevatorUpdate eu = new ElevatorUpdate(data);
 					
 					System.out.println("Time: " + LocalTime.now());
-					System.out.println(Thread.currentThread().getName() + " received " + eu + "\n");
+					System.out.println(Thread.currentThread().getName() + " received (eu) " + eu + "\n");
 					
 					scheduler.receiveElevatorUpdate(eu, packetToReceive.getPort());
 				}
@@ -116,7 +139,9 @@ public class SchedulerReciever implements Runnable{
 					ElevatorMessage em = new ElevatorMessage(data);
 					
 					System.out.println("Time: " + LocalTime.now());
-					System.out.println(Thread.currentThread().getName() + " received " + em + "\n");
+					System.out.println(Thread.currentThread().getName() + " received (em) " + em + "\n");
+					schedulerTest1 = "Scheduler received " + em;
+					System.out.println("TEST 1:" + schedulerTest1);
 					
 					scheduler.receiveElevatorMessage(em);
 				}
@@ -139,6 +164,8 @@ public class SchedulerReciever implements Runnable{
 	 */
 	@Override
 	public void run() {
+		//receiveTest();
 		receiveMessages();
+
 	}	
 }
