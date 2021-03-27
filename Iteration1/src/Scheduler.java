@@ -34,6 +34,8 @@ public class Scheduler implements Runnable {
 	 * The highest floor that the elevators can service
 	 */
 	private static final int TOP_FLOOR = 7;
+	
+	private static final int INVALID_ELEVATOR = -1;
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object
@@ -128,6 +130,10 @@ public class Scheduler implements Runnable {
 		
 		for(Integer port: ELEVATOR_PORT_NUMBERS) {
 			ElevatorUpdate eu = elevators.get(port);
+			
+			//if the elevator is in emergency mode, do not assign it
+			if(eu.isInEmergency()) continue;
+			
 			if(em.getDirection() == ElevatorDirection.DOWN) {
 				if(eu.getFloor() >= em.getFloor() && eu.getDirection() == ElevatorDirection.DOWN) {
 					elevatorsGoingInRightDirection.add(port);
@@ -149,11 +155,17 @@ public class Scheduler implements Runnable {
 	 * @return The port number of the chosen elevator
 	 */
 	private int getElevatorWithLeastPassengers(Map<Integer, ElevatorUpdate> elevators, List<Integer> suitableElevators) {
-		int leastPassengersPort = -1;
+		int leastPassengersPort = INVALID_ELEVATOR;
 		for(Integer port: suitableElevators) {
-			if(leastPassengersPort == -1) leastPassengersPort = port;
+			
+			ElevatorUpdate eu = elevators.get(port);
+			
+			//if the elevator is in emergency mode, do not assign it
+			if(eu.isInEmergency()) continue;
+			
+			if(leastPassengersPort == INVALID_ELEVATOR) leastPassengersPort = port;
 			else {
-				if(elevators.get(port).getPassengers() < elevators.get(leastPassengersPort).getPassengers()) {
+				if(eu.getPassengers() < elevators.get(leastPassengersPort).getPassengers()) {
 					leastPassengersPort = port;
 				}
 			}
@@ -186,8 +198,14 @@ public class Scheduler implements Runnable {
 			chosenElevator = getElevatorWithLeastPassengers(elevatorMapCopy, ELEVATOR_PORT_NUMBERS);
 		}
 		
-		//sends the request to the chosen elevator
-		receiver.sendElevatorMessage(em, chosenElevator);
+		if(chosenElevator == INVALID_ELEVATOR) {
+			//no elevator available to service the request
+		}
+		
+		else {
+			//sends the request to the chosen elevator
+			receiver.sendElevatorMessage(em, chosenElevator);
+		}
 	}
 	
 	/**

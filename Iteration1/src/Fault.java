@@ -1,0 +1,8 @@
+
+public enum Fault {
+	NONE,
+	MOTOR_FAULT,
+	OPEN_DOOR_FAULT,
+	CLOSE_DOOR_FAULT
+
+}
