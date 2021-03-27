@@ -15,6 +15,8 @@ import java.time.LocalTime;
 public class Floor implements Runnable {
 
 	private FloorReciever receiver;
+	
+	private static final int TIME_BETWEEN_REQUESTS = 10000;
 
 	/**
 	 * floor class constructor used to initialize floor
@@ -49,12 +51,12 @@ public class Floor implements Runnable {
 			while (Line != null) {
 				String[] data = Line.split(" "); // split each line by space and put it in a string array
 				
-				receiver.sendElevatorMessage(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3])));
+				receiver.sendElevatorMessage(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3]), data[4].toUpperCase()));
 
 				Line = read.readLine(); // if multiple lines, set the next line
 
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(TIME_BETWEEN_REQUESTS);
 				} catch (InterruptedException e) {
 				}
 			}

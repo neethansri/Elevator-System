@@ -93,6 +93,21 @@ public class ElevatorReciever implements Runnable{
 		}
 	}
 	
+	public void sendElevatorMessage(ElevatorMessage em) {
+		byte message[] = em.toByteArray();
+		DatagramPacket packetToSend = new DatagramPacket(message, message.length, local, SCHEDULER_PORT);
+		try {
+			
+			System.out.println("Time: " + LocalTime.now());
+			System.out.println(Thread.currentThread().getName() + " sent " + em + " to scheduler.\n");
+			
+			sendPacket(packetToSend);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Continuously receives UDP messages and responds appropriately
 	 */

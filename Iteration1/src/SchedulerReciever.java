@@ -32,9 +32,6 @@ public class SchedulerReciever implements Runnable{
 	
 	private static final byte[] ACK_MESSAGE = "ack".getBytes();
 	
-	//if elevator sends first
-	/*private static final byte[] ELEVATOR_MESSAGE_PROMPT = "prompt".getBytes();*/
-	
 	public static final byte ELEVATOR_UPDATE_SIGNATURE = 1;
 	public static final byte ELEVATOR_MESSAGE_SIGNATURE = 2;
 	
@@ -103,27 +100,6 @@ public class SchedulerReciever implements Runnable{
 
 				socket.receive(packetToReceive);
 				byte data[] = Arrays.copyOf(packetToReceive.getData(), packetToReceive.getLength());
-				
-				//if elevator sends first
-				/*if(Arrays.equals(data, ELEVATOR_MESSAGE_PROMPT)) {
-					ElevatorMessage em = scheduler.getElevatorMessage(packetToReceive.getPort());
-					if(em != null) {
-						byte message[] = em.toByteArray();
-						socket.send(new DatagramPacket(message, message.length, packetToReceive.getAddress(), packetToReceive.getPort()));
-						continue;
-					}
-				}
-				else {
-					if(data[0] == ELEVATOR_UPDATE_SIGNATURE) {
-						ElevatorUpdate eu = new ElevatorUpdate(data);
-						scheduler.receiveElevatorUpdate(eu);
-					}
-					else if(data[0] == ELEVATOR_MESSAGE_SIGNATURE) {
-						ElevatorMessage em = new ElevatorMessage(data);
-						scheduler.receiveElevatorMessage(em);
-					}
-				}
-				socket.send(new DatagramPacket(ACK_MESSAGE, ACK_MESSAGE.length, packetToReceive.getAddress(), packetToReceive.getPort()));*/
 				
 				if(Arrays.equals(data, ACK_MESSAGE)) continue;
 				

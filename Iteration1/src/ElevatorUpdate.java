@@ -37,6 +37,8 @@ public class ElevatorUpdate{
 	 */
 	private String time;
 	
+	private boolean emergency;
+	
 	private int passengers;
 	
 	/**
@@ -45,11 +47,12 @@ public class ElevatorUpdate{
 	 * @param direction The current direction of the elevator
 	 * @param time The time that the elevator sent the update
 	 */
-	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, String time) {
+	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, String time, boolean emergency) {
 		this.floor = floor;
 		this.direction = direction;
 		this.time = time;
 		this.passengers = passengers;
+		this.emergency = emergency;
 	}
 	
 	public ElevatorUpdate(byte[] array) {
@@ -57,11 +60,12 @@ public class ElevatorUpdate{
 		for(int i = 0; i < array.length; i++) {
 			if(array[i] == SPACER) spacerIndexes.add(i);
 		}
-		if(spacerIndexes.size() == 3) {
+		if(spacerIndexes.size() == 4) {
 			floor = Integer.parseInt(new String(Arrays.copyOfRange(array, 1, spacerIndexes.get(0))));
 			passengers = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(0) + 1, spacerIndexes.get(1))));
 			direction = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(1) + 1, spacerIndexes.get(2)))) == 1? ElevatorDirection.UP: ElevatorDirection.DOWN;
-			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(2) + 1, array.length));
+			emergency = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(2) + 1, spacerIndexes.get(3)))) == 1? true: false;
+			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(3) + 1, array.length));
 		}
 		else {
 			//invalid byte array
@@ -70,7 +74,7 @@ public class ElevatorUpdate{
 	}
 	
 	public static ElevatorUpdate initialStatus() {
-		return new ElevatorUpdate(INITIAL_FLOOR, ElevatorDirection.STOPPED, 0, LocalTime.now().toString());
+		return new ElevatorUpdate(INITIAL_FLOOR, ElevatorDirection.STOPPED, 0, LocalTime.now().toString(), false);
 	}
 
 	/**
@@ -101,11 +105,15 @@ public class ElevatorUpdate{
 		return time;
 	}
 	
+	public boolean isInEmergency() {
+		return emergency;
+	}
+	
 	/**
 	 * formats the contents of the message as a string
 	 */
 	public String toString() {
-		return time + " " + floor + " " + passengers + " " + direction;
+		return time + " " + floor + " " + passengers + " " + direction + " " + emergency;
 	}
 	
 	public byte[] toByteArray() {
@@ -117,6 +125,8 @@ public class ElevatorUpdate{
 			stream.write(String.valueOf(passengers).getBytes());
 			stream.write(SPACER);
 			stream.write(String.valueOf(direction == ElevatorDirection.UP? 1: -1).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(emergency? 1: 0).getBytes());
 			stream.write(SPACER);
 			stream.write(time.getBytes());
 		} catch (IOException e) {
