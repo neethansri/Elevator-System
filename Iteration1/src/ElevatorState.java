@@ -8,5 +8,7 @@
  */
 public enum ElevatorState {
 	STOPPED,
-	MOVING
+	MOVING,
+	OPEN,
+	EMERGENCY
 }
