@@ -113,7 +113,7 @@ public class ElevatorUpdate{
 	 * formats the contents of the message as a string
 	 */
 	public String toString() {
-		return time + " " + floor + " " + passengers + " " + direction + " " + emergency;
+		return "(Time: "+ time + ", Floor: " + floor + ", # of Passengers: " + passengers + ", Direction: " + direction + ", Emergency?: " + emergency + ")";
 	}
 	
 	public byte[] toByteArray() {

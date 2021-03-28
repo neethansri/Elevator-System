@@ -244,9 +244,7 @@ public class Elevator implements Runnable {
 	public synchronized void addRequest(ElevatorMessage message) {
 		if(!pendingMessages.contains(message)) {
 			testVariable = message.getFloor();
-			System.out.println("hey"+ testVariable);
 			pendingMessages.add(message);
-			System.out.println(pendingMessages.size());
 			floorsToVisit.add(message.getFloor());
 			
 			//there is a fault injected into the request, the elevator will get an error when it tries to do the specified action next
@@ -374,11 +372,23 @@ public class Elevator implements Runnable {
 				case STOPPED:	
 					//the elevator is stopped, and therefore ready to move from a floor
 					if(!floorsToVisit.isEmpty()) {
+						for(Integer msg: floorsToVisit) {
+							String msgtest = msg.toString();
+							System.out.println(Thread.currentThread().getName()+" floor to visit: "+msgtest);
+						}
 						//the elevator has pending requests and shall start moving
 						currentState = ElevatorState.MOVING;
 						direction = getDirectionFromStop(floor);
-						floor += direction == ElevatorDirection.UP? 1: -1;
-						
+						if(direction == ElevatorDirection.UP) {
+							if(Collections.min(floorsToVisit) != floor) {
+								floor += 1;
+							}
+						}
+						if(direction == ElevatorDirection.DOWN) {
+							if(Collections.max(floorsToVisit) != floor) {
+								floor += -1;
+							}
+						}
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " is starting to move towards floor " + floor + "\n");
 						
@@ -420,7 +430,16 @@ public class Elevator implements Runnable {
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " has decided to skip floor " + floor + "\n");
 					
-					floor += direction == ElevatorDirection.UP? 1: -1;
+					if(direction == ElevatorDirection.UP) {
+						if(Collections.min(floorsToVisit) != floor) {
+							floor += 1;
+						}
+					}
+					if(direction == ElevatorDirection.DOWN) {
+						if(Collections.max(floorsToVisit) != floor) {
+							floor += -1;
+						}
+					}
 					floorsTravelledWithoutStopping++;
 					
 					//tell the scheduler that its continuing
