@@ -54,6 +54,7 @@ public class Scheduler implements Runnable {
 		receiver = new SchedulerReceiver(this);
 		Thread receiverThread = new Thread(receiver, "Scheduler Receiver");
 		receiverThread.start();
+
 	}
 	
 	public SchedulerReceiver requestSchedulerReceiver() {
@@ -61,7 +62,6 @@ public class Scheduler implements Runnable {
 	}
 	
 	public String getElevatorMessage() {
-		
 		return pendingRequests.peek().toString();
 	}
 				

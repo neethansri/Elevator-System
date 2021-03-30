@@ -38,7 +38,6 @@ public class ElevatorReceiver implements Runnable{
 	 * The elevator associated with this receiver
 	 */
 	private Elevator elevator;
-	private String elevatorTest;
 
 	/**
 	 * Constructor for class ElevatorReciever
@@ -108,13 +107,6 @@ public class ElevatorReceiver implements Runnable{
 		}
 	}
 	
-	/**
-	 * 
-	 * @return the message received by the scheduler
-	 */
-	public String getElevatorTest() {
-		return elevatorTest;
-	}
 	
 	/**
 	 * Continuously receives UDP messages and responds appropriately
@@ -135,8 +127,6 @@ public class ElevatorReceiver implements Runnable{
 						
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " received " + em + "\n");
-						elevatorTest = "Elevator 1 received "+em;
-						System.out.println("TEST 1:" + elevatorTest);
 						
 						//if the incoming message is an ElevatorMessage, adds the request to the elevator and sends back acknowledgement
 						elevator.addRequest(em);

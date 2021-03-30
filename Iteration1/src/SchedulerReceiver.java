@@ -37,7 +37,7 @@ public class SchedulerReceiver implements Runnable{
 	
 	private static final int FLOOR_PORT = 100;
 	
-	private String schedulerTest1, schedulerTest2;
+	private String schedulerTest2;
 	
 	
 	/**
@@ -60,15 +60,6 @@ public class SchedulerReceiver implements Runnable{
 	
 	/**
 	 * 
-	 * @return the message received from the floor
-	 *         
-	 */
-	public String getSchedulerTest1() {
-		System.out.println("im here\n");
-		return schedulerTest1;
-	}
-	/**
-	 * 
 	 * @return the message sent to the elevator
 	 *         
 	 */
@@ -88,7 +79,6 @@ public class SchedulerReceiver implements Runnable{
 			System.out.println(Thread.currentThread().getName() + " sent " + em + " to Elevator " + elevatorPort + "\n");
 			
 			schedulerTest2 = "Scheduler sent " + em + " to Elevator " + elevatorPort;
-			System.out.println("TEST2: "+schedulerTest2);
 			
 			sendPacket(packetToSend);
 			
@@ -140,8 +130,6 @@ public class SchedulerReceiver implements Runnable{
 					
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " received (em) " + em + "\n");
-					schedulerTest1 = "Scheduler received " + em;
-					System.out.println("TEST 1:" + schedulerTest1);
 					
 					scheduler.receiveElevatorMessage(em);
 				}
