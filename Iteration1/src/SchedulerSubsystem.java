@@ -1,4 +1,5 @@
 import java.time.LocalTime;
+import java.util.ArrayList;
 
 /**
  * Starts the scheduler subsystem
@@ -9,6 +10,12 @@ import java.time.LocalTime;
  * @author Neethan Sriranganathan 101082581
  */
 public class SchedulerSubsystem {
+	
+	private static final ArrayList<Integer> lists = new ArrayList<>(){{
+		lists.add(1);
+		lists.add(2);
+		lists.add(3);
+	}};
 
 	public static void main(String[] args) {
 		
@@ -16,7 +23,7 @@ public class SchedulerSubsystem {
 		System.out.println("Scheduler subsystem has started!\n");
 		
 		// creating a scheduler object
-		Thread schedulerThread = new Thread(new Scheduler(), "Scheduler");
+		Thread schedulerThread = new Thread(new Scheduler(lists,7), "Scheduler");
 		schedulerThread.start();
 	}
 }

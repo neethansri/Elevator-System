@@ -13,7 +13,7 @@ public class Scheduler implements Runnable {
 	/**
 	 * A data structure containing the port numbers of all elevators, and their most recent update (which includes location, direction, etc...)
 	 */
-	private Map<Integer, ElevatorUpdate> elevators;
+	private Map<Integer, ElevatorUpdate> elevators = new HashMap<>();
 	/**
 	 * A queue to hold incoming requests from the floor subsystem
 	 */
@@ -25,7 +25,7 @@ public class Scheduler implements Runnable {
 	/**
 	 * All the well-known port numbers of the elevators
 	 */
-	private static final List<Integer> ELEVATOR_PORT_NUMBERS = new ArrayList<>(Arrays.asList(1,2,3,4,5));
+	private ArrayList<Integer> numOfElevators = new ArrayList<>();
 	/**
 	 * The lowest floor that the elevators can service
 	 */
@@ -33,21 +33,24 @@ public class Scheduler implements Runnable {
 	/**
 	 * The highest floor that the elevators can service
 	 */
-	private static final int TOP_FLOOR = 7;
+	private int topFloor;
 	
 	private static final int INVALID_ELEVATOR = -1;
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object
+	 * @param i 
+	 * @param elevators 
 	 */
-	public Scheduler() {
+	public Scheduler(ArrayList<Integer> elevatorsList, int i) {
 		
-		elevators = new HashMap<>();
+		numOfElevators = elevatorsList;
 		pendingRequests = new LinkedList<>();
+		topFloor = i;
 		
 		//initializes the map that keeps track of the elevators with the elevators' initial status
-		for(Integer port: ELEVATOR_PORT_NUMBERS) {
-			elevators.put(port, ElevatorUpdate.initialStatus());
+		for(int port: numOfElevators) {
+			elevators.put(Integer.valueOf(port), ElevatorUpdate.initialStatus());
 		}
 		
 		//creates and runs a SchedulerReceiver object to handle UDP communication
@@ -75,7 +78,7 @@ public class Scheduler implements Runnable {
 		
 		//if the request comes from a floor that doesn't exist, it is discarded
 		//if the request includes a passenger pressing a car button that doesn't exist, it is discarded
-		if(em.getFloor() > TOP_FLOOR || em.getFloor() < BOTTOM_FLOOR || em.getButton() > TOP_FLOOR || em.getButton() < BOTTOM_FLOOR) { 
+		if(em.getFloor() > topFloor || em.getFloor() < BOTTOM_FLOOR || em.getButton() > topFloor || em.getButton() < BOTTOM_FLOOR) { 
 			System.out.println("Time: " + LocalTime.now());
 			System.out.println(Thread.currentThread().getName() + " discarded the incoming request because it referenced a floor that doesn't exist.\n");
 			return;
@@ -128,7 +131,7 @@ public class Scheduler implements Runnable {
 	private List<Integer> getElevatorsGoingInRightDirection(Map<Integer, ElevatorUpdate> elevators, ElevatorMessage em){
 		List<Integer> elevatorsGoingInRightDirection = new ArrayList<>();
 		
-		for(Integer port: ELEVATOR_PORT_NUMBERS) {
+		for(Integer port: numOfElevators) {
 			ElevatorUpdate eu = elevators.get(port);
 			
 			//if the elevator is in emergency mode, do not assign it
@@ -195,7 +198,7 @@ public class Scheduler implements Runnable {
 		}
 		else {
 			//if there are no elevators going in the right direction, choose the elevator with the least passengers out of all elevators
-			chosenElevator = getElevatorWithLeastPassengers(elevatorMapCopy, ELEVATOR_PORT_NUMBERS);
+			chosenElevator = getElevatorWithLeastPassengers(elevatorMapCopy, numOfElevators);
 		}
 		
 		if(chosenElevator == INVALID_ELEVATOR) {

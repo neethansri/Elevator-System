@@ -24,7 +24,7 @@ public class DoorTimer implements Runnable{
 		try {
 			Thread.sleep(DOOR_TIME);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println("Door Timer Interrupted");
 		}
 		elevator.setState(elevator.getState() == ElevatorState.OPEN? ElevatorState.STOPPED: ElevatorState.OPEN);
 		elevatorThread.interrupt();

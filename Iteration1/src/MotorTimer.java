@@ -25,7 +25,7 @@ public class MotorTimer implements Runnable{
 			try {
 				Thread.sleep(waitTime);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("Motor Timer Interrupted");
 			}
 			elevator.setArrivalFlag();
 			

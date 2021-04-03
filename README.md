@@ -43,6 +43,17 @@ SchedulerSubsystem.java - A class used to create the Scheduler threads and run t
 
 SchedulerReceiver.java - A receiver class used to receive from scheduler and sends ack to scheduler
 
+Door.java - ChInit Door class to start door thread
+
+DoorTimer.java - Creates a timer if the door is in the correct position
+
+Fault.java - enum class for fault states
+
+Motor.java -  Init motor class to start motor thread
+
+MotorTimer.java - If it doesnt reach fo
+
+
 
 -----------------------------------------------------------------------------------------------------------
 SET UP INSTRUCTIONS

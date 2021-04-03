@@ -159,8 +159,7 @@ public class Elevator implements Runnable {
 		try {
 			Thread.sleep(waitTime + LATENCY_TIME);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Elevator Interrupted");
 		}
 
 		//if the arrival flag has not been set, there is an error
@@ -312,7 +311,7 @@ public class Elevator implements Runnable {
 		try {
 			Thread.sleep(DOOR_TIME + LATENCY_TIME);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println("Door Timer Interrupted");
 		}
 		
 		if(currentState != ElevatorState.OPEN) {
@@ -327,7 +326,7 @@ public class Elevator implements Runnable {
 		try {
 			Thread.sleep((long) LOADING_TIME - 2 * DOOR_TIME);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println("Door open/close Timer Interrupted");
 		}
 		
 		//if the elevator needs to intentionally fail, it will not open the doors
@@ -341,7 +340,7 @@ public class Elevator implements Runnable {
 		try {
 			Thread.sleep(DOOR_TIME + LATENCY_TIME);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println("Door closing Timer Interrupted");
 		}
 		
 		if(currentState != ElevatorState.STOPPED) {

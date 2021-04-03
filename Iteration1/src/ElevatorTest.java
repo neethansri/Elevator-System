@@ -8,6 +8,8 @@
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 /*
@@ -16,8 +18,12 @@ import org.junit.Test;
 public class ElevatorTest {
 	private ElevatorMessage floorInfo = new ElevatorMessage("14:05:15.0", 2, "UP", 4, "NO_FAULT");
 
-	
-	static Scheduler scheduler = new Scheduler();
+	private static final ArrayList<Integer> lists = new ArrayList<>(){{
+		lists.add(1);
+		lists.add(2);
+		lists.add(3);
+	}};
+	static Scheduler scheduler = new Scheduler(lists,7);
 
 	static Floor floor = new Floor(100);
 
