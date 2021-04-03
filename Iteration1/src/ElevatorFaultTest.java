@@ -7,14 +7,21 @@
  */
 
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 
 public class ElevatorFaultTest {
 	
 	private ElevatorMessage floorInfo2 = new ElevatorMessage("14:05:15.0", 4, "DOWN", 2, "MOTOR");
-	
-	static Scheduler scheduler2 = new Scheduler();
+	private static final ArrayList<Integer> lists = new ArrayList<>(){{
+		lists.add(1);
+		lists.add(2);
+		lists.add(3);
+	}};
+	static Scheduler scheduler2 = new Scheduler(lists,7);
 	static Floor floor2 = new Floor(100);
 	private FloorReceiver floorReceiver2 = floor2.requestFloorReceiver();
 	
