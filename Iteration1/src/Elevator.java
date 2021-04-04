@@ -23,6 +23,7 @@ public class Elevator implements Runnable {
 
 	private ElevatorReceiver receiver;
 
+	private SecondSystem GUI;
 	
 	private static final int LATENCY_TIME = 1000;
 	
@@ -123,6 +124,10 @@ public class Elevator implements Runnable {
 		closeDoorFault = false;
 		
 		this.port = port;
+		
+		GUI = new SecondSystem(port+"");
+		GUI.setTitle("Elevator "+port);
+		GUI.setVisible(true);
 		
 		receiver = new ElevatorReceiver(this, port);
 		
@@ -349,6 +354,10 @@ public class Elevator implements Runnable {
 		}
 	}
 	
+	public void setElevatorStatus(String info) {
+		GUI.label2.setText(info);
+	}
+	
 	private void releasePassengers() {
 		
 		//send all the passengers' desired destinations as new requests to the scheduler, to be picked up at the current floor
@@ -394,6 +403,9 @@ public class Elevator implements Runnable {
 						//tell the scheduler that its moving
 						receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
 						
+						String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
+						setElevatorStatus(GUIStatus);
+						
 						//tell the motor to move and wait
 						waitForMotor(timeToNextApproachPoint(floorsTravelledWithoutStopping));
 					}
@@ -421,6 +433,9 @@ public class Elevator implements Runnable {
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " has stopped at floor " + floor + "\n");
 					
+					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
+					setElevatorStatus(GUIStatus);
+					
 					//load and unload the elevator
 					doLoadingAtFloor();
 				}
@@ -444,8 +459,12 @@ public class Elevator implements Runnable {
 					//tell the scheduler that its continuing
 					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
 					
+					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
+					setElevatorStatus(GUIStatus);
+					
 					//tell the motor to move and wait
 					waitForMotor(timeToNextApproachPoint(floorsTravelledWithoutStopping));
+				
 				}
 				break;
 			default:
@@ -453,5 +472,6 @@ public class Elevator implements Runnable {
 			}
 		}
 	}
+
 
 }
