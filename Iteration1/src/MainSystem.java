@@ -6,7 +6,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import javax.swing.JTextField;
@@ -16,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
+import javax.swing.ImageIcon;
 
 public class MainSystem extends JFrame {
 
@@ -85,9 +85,8 @@ public class MainSystem extends JFrame {
 	 */
 	public MainSystem() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 650, 450);
 		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		
 		JLabel lblNewLabel = new JLabel("Concierge Desk");
@@ -107,34 +106,39 @@ public class MainSystem extends JFrame {
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				startElevatorSystem();
-				SecondSystem second = new SecondSystem(textField.getText());
-				second.setVisible(true);
+//				SecondSystem second = new SecondSystem();
+//				second.setVisible(true);
 			}
 
 		});
+		
+		JLabel lblNewLabel_3 = new JLabel("");
+		lblNewLabel_3.setIcon(new ImageIcon("E:\\Users\\Moe\\Desktop\\mainsystem.png"));
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
 					.addGap(151)
-					.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 102, Short.MAX_VALUE)
+					.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 365, Short.MAX_VALUE)
 					.addGap(158))
 				.addGroup(gl_contentPane.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING, false)
-						.addGroup(Alignment.LEADING, gl_contentPane.createSequentialGroup()
-							.addComponent(lblNewLabel_2)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(textField_1))
-						.addGroup(Alignment.LEADING, gl_contentPane.createSequentialGroup()
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPane.createSequentialGroup()
 							.addComponent(lblNewLabel_1)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-					.addContainerGap(222, Short.MAX_VALUE))
+							.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addComponent(lblNewLabel_2)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(textField_1, 102, 102, 102)))
+					.addGap(97)
+					.addComponent(lblNewLabel_3)
+					.addContainerGap(242, Short.MAX_VALUE))
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addGap(180)
+					.addGap(168)
 					.addComponent(btnNewButton)
-					.addContainerGap(187, Short.MAX_VALUE))
+					.addContainerGap(349, Short.MAX_VALUE))
 		);
 		gl_contentPane.setVerticalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
@@ -142,16 +146,22 @@ public class MainSystem extends JFrame {
 					.addContainerGap()
 					.addComponent(lblNewLabel)
 					.addGap(50)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblNewLabel_1)
-						.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(50)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblNewLabel_2)
-						.addComponent(textField_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblNewLabel_1)
+								.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblNewLabel_2)
+								.addComponent(textField_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+							.addGap(53))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addComponent(lblNewLabel_3)
+							.addPreferredGap(ComponentPlacement.RELATED)))
+					.addGap(21)
 					.addComponent(btnNewButton)
-					.addContainerGap())
+					.addGap(120))
 		);
 		contentPane.setLayout(gl_contentPane);
 	}
