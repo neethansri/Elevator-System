@@ -113,7 +113,7 @@ public class MainSystem extends JFrame {
 		});
 		
 		JLabel lblNewLabel_3 = new JLabel("");
-		lblNewLabel_3.setIcon(new ImageIcon("E:\\Users\\Moe\\Desktop\\mainsystem.png"));
+		lblNewLabel_3.setIcon(new ImageIcon("./mainsystem.png"));
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
