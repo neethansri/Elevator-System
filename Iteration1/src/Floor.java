@@ -10,18 +10,27 @@ import java.io.IOException;
  */
 public class Floor implements Runnable {
 
-	// initializing variables
-	Scheduler scheduler;
-	private ElevatorMessage floorInfo;
+
+	
+	private static final int TIME_BETWEEN_REQUESTS = 10000;
+
+	private FloorReceiver receiver;
 
 	/**
 	 * floor class constructor used to initialize floor
 	 * 
 	 * @param scheduler is of class Scheduler
 	 */
-	public Floor(Scheduler scheduler) {
-		this.scheduler = scheduler;
+	public Floor(int port) {
 
+		receiver = new FloorReceiver(this, port);
+		
+		Thread receiverThread = new Thread(receiver, "Floor Receiver");
+		receiverThread.start();
+	}
+	
+	public FloorReceiver requestFloorReceiver() {
+		return receiver;
 	}
 
 	/**
@@ -30,8 +39,8 @@ public class Floor implements Runnable {
 	@Override
 	public void run() {
 		readFile();
-	}
-
+	}  	
+    
 	/**
 	 * void function used to parse the file with the events
 	 */
@@ -42,17 +51,14 @@ public class Floor implements Runnable {
 			String Line;
 			Line = read.readLine();
 			while (Line != null) {
-
 				String[] data = Line.split(" "); // split each line by space and put it in a string array
-				floorInfo = new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),
-						Integer.parseInt(data[3])); // creates a ElevatorMessage class with the values from the file
-
-				scheduler.sendEvent(floorInfo);// send this event from floor to elevator
+				
+				receiver.sendElevatorMessage(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3]), data[4].toUpperCase()));
 
 				Line = read.readLine(); // if multiple lines, set the next line
 
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(TIME_BETWEEN_REQUESTS);
 				} catch (InterruptedException e) {
 				}
 			}

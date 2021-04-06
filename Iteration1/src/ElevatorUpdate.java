@@ -1,4 +1,10 @@
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A message class used by the elevator subsystem to send updates about its location and direction to the scheduler
@@ -8,7 +14,15 @@ import java.time.LocalTime;
  * @author Mohammad Issa 101065045
  * @author Neethan Sriranganathan 101082581
  */
-public class ElevatorUpdate {
+public class ElevatorUpdate{
+	
+	public static final byte ELEVATOR_UPDATE_SIGNATURE = 1;
+	public static final byte SPACER = 0;
+	
+	/**
+	 * The floor that the elevator will initially start at
+	 */
+	public static final int INITIAL_FLOOR = 1;
 	
 	/**
 	 * The current floor of the elevator
@@ -21,7 +35,9 @@ public class ElevatorUpdate {
 	/**
 	 * The time that the elevator sent the update
 	 */
-	private LocalTime time;
+	private String time;
+	
+	private boolean emergency;
 	
 	private int passengers;
 	
@@ -31,11 +47,34 @@ public class ElevatorUpdate {
 	 * @param direction The current direction of the elevator
 	 * @param time The time that the elevator sent the update
 	 */
-	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, LocalTime time) {
+	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, String time, boolean emergency) {
 		this.floor = floor;
 		this.direction = direction;
 		this.time = time;
 		this.passengers = passengers;
+		this.emergency = emergency;
+	}
+	
+	public ElevatorUpdate(byte[] array) {
+		List<Integer> spacerIndexes = new ArrayList<>();
+		for(int i = 0; i < array.length; i++) {
+			if(array[i] == SPACER) spacerIndexes.add(i);
+		}
+		if(spacerIndexes.size() == 4) {
+			floor = Integer.parseInt(new String(Arrays.copyOfRange(array, 1, spacerIndexes.get(0))));
+			passengers = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(0) + 1, spacerIndexes.get(1))));
+			direction = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(1) + 1, spacerIndexes.get(2)))) == 1? ElevatorDirection.UP: ElevatorDirection.DOWN;
+			emergency = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(2) + 1, spacerIndexes.get(3)))) == 1? true: false;
+			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(3) + 1, array.length));
+		}
+		else {
+			//invalid byte array
+			return;
+		}
+	}
+	
+	public static ElevatorUpdate initialStatus() {
+		return new ElevatorUpdate(INITIAL_FLOOR, ElevatorDirection.STOPPED, 0, LocalTime.now().toString(), false);
 	}
 
 	/**
@@ -62,14 +101,37 @@ public class ElevatorUpdate {
 	 * getter for time
 	 * @return The time that the elevator sent the update
 	 */
-	public LocalTime getTime() {
+	public String getTime() {
 		return time;
+	}
+	
+	public boolean isInEmergency() {
+		return emergency;
 	}
 	
 	/**
 	 * formats the contents of the message as a string
 	 */
 	public String toString() {
-		return floor + direction.toString() + time;
+		return "(Time: "+ time + ", Floor: " + floor + ", # of Passengers: " + passengers + ", Direction: " + direction + ", Emergency?: " + emergency + ")";
+	}
+	
+	public byte[] toByteArray() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		try {
+			stream.write(ELEVATOR_UPDATE_SIGNATURE);
+			stream.write(String.valueOf(floor).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(passengers).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(direction == ElevatorDirection.UP? 1: -1).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(emergency? 1: 0).getBytes());
+			stream.write(SPACER);
+			stream.write(time.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return stream.toByteArray();
 	}
 }

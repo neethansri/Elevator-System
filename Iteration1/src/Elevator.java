@@ -9,6 +9,25 @@ import java.util.*;
  * @author Neethan Sriranganathan 101082581
  */
 public class Elevator implements Runnable {
+	
+	private boolean motorFault, openDoorFault, closeDoorFault;
+	
+	/**
+	 * The motor of the elevator
+	 */
+	private Motor motor;
+	/**
+	 * The door of the elevator
+	 */
+	private Door door;
+
+	private ElevatorReceiver receiver;
+
+	private SecondSystem GUI;
+	
+	private static final int LATENCY_TIME = 1000;
+	
+	private int port;
 	/**
 	 * The floor that the elevator will initially start at
 	 */
@@ -25,11 +44,7 @@ public class Elevator implements Runnable {
 	private Set<Integer> floorsToVisit;
 	
 	private List<Integer> passengerDestinations;
-	
-	/**
-	 * The scheduler giving this elevator requests
-	 */
-	private Scheduler scheduler;
+
 	/**
 	 * The direction of the elevator
 	 */
@@ -43,6 +58,12 @@ public class Elevator implements Runnable {
 	 * The number of floors that the elevator has travelled without stopping at a floor.
 	 * This is useful when calculating the elevator's speed and acceleration
 	 */
+	
+	public int testVariable;
+	/**
+	 * This string will be used to hold the most recent event for testing purposes
+	 */
+	
 	private int floorsTravelledWithoutStopping;
 	/**
 	 * The acceleration rate of the elevator in m/s^2.
@@ -74,14 +95,18 @@ public class Elevator implements Runnable {
 	 * It is a static field because it is used in multiple static methods
 	 */
 	private static final double DISTANCE_TO_ACCELERATE_TO_MAX_SPEED = Math.pow(MAXIMUM_SPEED, 2) / (2 * ACCELERATION_RATE);
+	
+	private static final int DOOR_TIME = 2000;
+	
+	private boolean arrivalFlag;
+	
 	/**
 	 * Elevator constructor takes in scheduler object and initializes the elevator
 	 * object
 	 * 
 	 * @param scheduler The scheduler responsible for giving this elevator requests
 	 */
-	public Elevator(Scheduler scheduler) {
-		this.scheduler = scheduler;
+	public Elevator(int port) {
 		direction = ElevatorDirection.STOPPED;
 		floor = INITIAL_FLOOR;
 		currentState = ElevatorState.STOPPED;
@@ -89,6 +114,81 @@ public class Elevator implements Runnable {
 		passengerDestinations = new ArrayList<>();
 		floorsToVisit = new HashSet<>();
 		floorsTravelledWithoutStopping = 0;
+		
+		door = new Door(this);
+		
+		motor = new Motor(this);
+		
+		motorFault = false;
+		openDoorFault = false;
+		closeDoorFault = false;
+		
+		this.port = port;
+		
+		GUI = new SecondSystem(port+"");
+		GUI.setTitle("Elevator "+port);
+		GUI.setVisible(true);
+		
+		receiver = new ElevatorReceiver(this, port);
+		
+		Thread  receiverThread = new Thread(receiver, "Elevator Receiver " + port);
+		receiverThread.start();
+
+	}
+	
+	public int getPort() {
+		return port;
+	}
+	
+
+	public ElevatorState getState() {
+		return currentState;
+	}
+	
+	public void setArrivalFlag() {
+		arrivalFlag = true;
+	}
+	
+	private void waitForMotor(int waitTime) {
+		//resets the arrival flag
+		arrivalFlag = false;
+		
+		//if the elevator needs to intentionally fail, it will not start the motor
+		if(!motorFault) {
+			//starts another thread that sleeps for the specified amount of time, simulating the motor
+			motor.move(waitTime);
+		}
+		else motorFault = false;
+		
+		//waits for the amount of time it should take plus some extra time
+		try {
+			Thread.sleep(waitTime + LATENCY_TIME);
+		} catch (InterruptedException e) {
+			System.out.println("Elevator Interrupted");
+		}
+
+		//if the arrival flag has not been set, there is an error
+		if(!arrivalFlag) declareEmergency();
+	}
+	
+	private void declareEmergency() {
+		
+		System.out.println("Time: " + LocalTime.now());
+		System.out.println(Thread.currentThread().getName() + " has entered the emergency state\n");
+		
+		//disable the elevator and notify the scheduler
+		setState(ElevatorState.EMERGENCY);
+		receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), true));
+	}
+
+	public ElevatorReceiver requestElevatorReceiver() {
+		return receiver;
+
+	}
+	
+	public int getMessage() {
+		
+		return testVariable;
 	}
 	
 	/**
@@ -147,8 +247,17 @@ public class Elevator implements Runnable {
 	 */
 	public synchronized void addRequest(ElevatorMessage message) {
 		if(!pendingMessages.contains(message)) {
+			testVariable = message.getFloor();
 			pendingMessages.add(message);
 			floorsToVisit.add(message.getFloor());
+			
+			//there is a fault injected into the request, the elevator will get an error when it tries to do the specified action next
+			if(message.getFault() != Fault.NONE) {
+				Fault f = message.getFault();
+				if(f == Fault.MOTOR_FAULT) motorFault = true;
+				else if(f == Fault.OPEN_DOOR_FAULT) openDoorFault = true;
+				else if(f == Fault.CLOSE_DOOR_FAULT) closeDoorFault = true;
+			}
 		}
 	}
 	
@@ -189,35 +298,116 @@ public class Elevator implements Runnable {
 		}
 		return false;
 	}
+	
+	public void setState(ElevatorState state) {
+		currentState = state;
+	}
+	
+	private void doLoadingAtFloor() {
+		
+		//if the elevator needs to intentionally fail, it will not open the doors
+		if(!openDoorFault) {
+			//tell the doors to open
+			door.moveDoors();
+		}
+		else openDoorFault = false;
+		
+		//wait for how long opening doors should take plus some extra time
+		try {
+			Thread.sleep(DOOR_TIME + LATENCY_TIME);
+		} catch (InterruptedException e) {
+			System.out.println("Door Timer Interrupted");
+		}
+		
+		if(currentState != ElevatorState.OPEN) {
+			//doors won't open, the elevator will declare an emergency
+			declareEmergency();
+			
+			//leaves the method (we don't need to try and close the doors if they haven't opened)
+			return;
+		}
+		
+		//sleep for the total loading time minus the time it takes to open and close the doors
+		try {
+			Thread.sleep((long) LOADING_TIME - 2 * DOOR_TIME);
+		} catch (InterruptedException e) {
+			System.out.println("Door open/close Timer Interrupted");
+		}
+		
+		//if the elevator needs to intentionally fail, it will not open the doors
+		if(!closeDoorFault) {
+			//tell the doors to close
+			door.moveDoors();
+		}
+		else closeDoorFault = false;
+		
+		//wait for how long closing doors should take plus some extra time
+		try {
+			Thread.sleep(DOOR_TIME + LATENCY_TIME);
+		} catch (InterruptedException e) {
+			System.out.println("Door closing Timer Interrupted");
+		}
+		
+		if(currentState != ElevatorState.STOPPED) {
+			//doors won't close, the elevator will tell all the passengers to get off and send its requests back to the scheduler
+			releasePassengers();
+		}
+	}
+	
+	public void setElevatorStatus(String info) {
+		GUI.label2.setText(info);
+	}
+	
+	private void releasePassengers() {
+		
+		//send all the passengers' desired destinations as new requests to the scheduler, to be picked up at the current floor
+		for(Integer dest: passengerDestinations) {
+			receiver.sendElevatorMessage(new ElevatorMessage(LocalTime.now().toString(), floor, 
+					(dest > floor? ElevatorDirection.UP: ElevatorDirection.DOWN), dest));
+		}
+		
+		//disables the elevator, as it cannot safely move with the door open
+		declareEmergency();
+	}
 
 	/**
 	 * Run method in Elevator simulating the state machine
 	 */
 	@Override
 	public void run() {
-		
 		while(true) {
 			switch(currentState) {
 				case STOPPED:	
 					//the elevator is stopped, and therefore ready to move from a floor
 					if(!floorsToVisit.isEmpty()) {
+						for(Integer msg: floorsToVisit) {
+							String msgtest = msg.toString();
+							System.out.println(Thread.currentThread().getName()+" floor to visit: "+msgtest);
+						}
 						//the elevator has pending requests and shall start moving
 						currentState = ElevatorState.MOVING;
 						direction = getDirectionFromStop(floor);
-						floor += direction == ElevatorDirection.UP? 1: -1;
-						
+						if(direction == ElevatorDirection.UP) {
+							if(Collections.min(floorsToVisit) != floor) {
+								floor += 1;
+							}
+						}
+						if(direction == ElevatorDirection.DOWN) {
+							if(Collections.max(floorsToVisit) != floor) {
+								floor += -1;
+							}
+						}
 						System.out.println("Time: " + LocalTime.now());
 						System.out.println(Thread.currentThread().getName() + " is starting to move towards floor " + floor + "\n");
 						
 						//tell the scheduler that its moving
-						scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
+						receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
 						
-						//sleep for the amount of time until the elevator approaches the next approach point
-						try {
-							Thread.sleep(timeToNextApproachPoint(floorsTravelledWithoutStopping));
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+						String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
+						setElevatorStatus(GUIStatus);
+						
+						//tell the motor to move and wait
+						waitForMotor(timeToNextApproachPoint(floorsTravelledWithoutStopping));
 					}
 					break;
 			case MOVING:
@@ -235,40 +425,46 @@ public class Elevator implements Runnable {
 					removeFloorToVisit(floor);
 					
 					//tell the scheduler that its stopping
-					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
 					
-					//sleep for the amount of time until the elevator decelerates and stops at the floor + the loading time while stopped
-					try {
-						Thread.sleep((long) timeToDecelerate(floorsTravelledWithoutStopping));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					//tell the motor to move and wait
+					waitForMotor(timeToDecelerate(floorsTravelledWithoutStopping));
+					
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " has stopped at floor " + floor + "\n");
-					//sleep for the loading time while stopped
-					try {
-						Thread.sleep((long) LOADING_TIME);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					
+					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
+					setElevatorStatus(GUIStatus);
+					
+					//load and unload the elevator
+					doLoadingAtFloor();
 				}
 				else {
 					//the elevator should skip the next floor and move to the next approach point
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " has decided to skip floor " + floor + "\n");
 					
-					floor += direction == ElevatorDirection.UP? 1: -1;
+					if(direction == ElevatorDirection.UP) {
+						if(Collections.min(floorsToVisit) != floor) {
+							floor += 1;
+						}
+					}
+					if(direction == ElevatorDirection.DOWN) {
+						if(Collections.max(floorsToVisit) != floor) {
+							floor += -1;
+						}
+					}
 					floorsTravelledWithoutStopping++;
 					
 					//tell the scheduler that its continuing
-					scheduler.updateElevatorState(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now()));
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
 					
-					//sleep for the amount of time until the elevator reaches the next approach point;
-					try {
-						Thread.sleep(timeToNextApproachPoint(floorsTravelledWithoutStopping));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
+					setElevatorStatus(GUIStatus);
+					
+					//tell the motor to move and wait
+					waitForMotor(timeToNextApproachPoint(floorsTravelledWithoutStopping));
+				
 				}
 				break;
 			default:
@@ -276,5 +472,6 @@ public class Elevator implements Runnable {
 			}
 		}
 	}
+
 
 }
