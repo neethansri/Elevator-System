@@ -361,15 +361,19 @@ public class Elevator implements Runnable {
 		String floor[] = info.split("");
 		GUI.label3.setText(floor[15]);
 		if(State.equals("MOVING") && Direction.equals("UP")) {
+			GUI.lblNewLabel.setIcon(new ImageIcon("./elevatorIteration#5.jpg"));
 			GUI.label4.setIcon(new ImageIcon("./greenup.png"));
 		}
 		if(State.equals("MOVING") && Direction.equals("DOWN")) {
+			GUI.lblNewLabel.setIcon(new ImageIcon("./elevatorIteration#5.jpg"));
 			GUI.label4.setIcon(new ImageIcon("./down.png"));
 		}
 		if(State.equals("STOPPED")) {
+			GUI.lblNewLabel.setIcon(new ImageIcon("./elevatorIteration#5OpenDoor.jpg"));
 			GUI.label4.setIcon(new ImageIcon("./stop.png"));
 		}
 		if(State.equals("EMERGENCY")) {
+			GUI.lblNewLabel.setIcon(new ImageIcon("./elevatorIteration#5OpenDoorCaution.jpg"));
 			GUI.label4.setIcon(new ImageIcon("./warning.png"));
 		}
 	}

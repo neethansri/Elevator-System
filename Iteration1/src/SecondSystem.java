@@ -22,6 +22,8 @@ public class SecondSystem extends JFrame {
 	
 	public JLabel label4;
 	
+	public JLabel lblNewLabel;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -56,7 +58,7 @@ public class SecondSystem extends JFrame {
 		contentPane.setLayout(null);
 		
 		label4 = new JLabel("");
-		label4.setBounds(395, 81, 75, 39);
+		label4.setBounds(395, 409, 75, 39);
 		contentPane.add(label4);
 		
 		label3 = new JLabel(e);
@@ -75,7 +77,7 @@ public class SecondSystem extends JFrame {
 		
 		contentPane.add(label1);
 		
-		JLabel lblNewLabel = new JLabel("New label");
+		lblNewLabel = new JLabel("New label");
 		lblNewLabel.setIcon(new ImageIcon("./elevatorIteration#5.jpg"));
 		lblNewLabel.setBounds(0, 2, 470, 584);
 		contentPane.add(lblNewLabel);
