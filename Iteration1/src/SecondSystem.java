@@ -11,12 +11,17 @@ import java.awt.Color;
 import java.awt.Font;
 
 
+
 public class SecondSystem extends JFrame {
 
 	public JPanel contentPane;
 	
 	public JLabel label2;
 
+	public JLabel label3;
+	
+	public JLabel label4;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -49,6 +54,17 @@ public class SecondSystem extends JFrame {
 		
 		contentPane.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 		contentPane.setLayout(null);
+		
+		label4 = new JLabel("");
+		label4.setBounds(395, 81, 75, 39);
+		contentPane.add(label4);
+		
+		label3 = new JLabel(e);
+		label3.setFont(new Font("Tahoma", Font.BOLD, 18));
+		label3.setForeground(Color.YELLOW);
+		label3.setBackground(Color.WHITE);
+		label3.setBounds(403, 379, 67, 28);
+		contentPane.add(label3);
 		
 		label2 = new JLabel("Elevator "+e+" Status");
 		label2.setForeground(Color.WHITE);
