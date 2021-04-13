@@ -16,35 +16,34 @@ import org.junit.Test;
  * This is a JUnit Test
  */
 public class ElevatorTest {
-	private ElevatorMessage floorInfo = new ElevatorMessage("14:05:15.0", 2, "UP", 4, "NO_FAULT");
+	private ElevatorMessage floorInfo = new ElevatorMessage("14:05:15.0", 2, "UP", 4, "NO_FAULT",true);
 
-	private static final ArrayList<Integer> lists = new ArrayList<>(){{
+	private static ArrayList<Integer> lists = new ArrayList<Integer>();
+	static {
 		lists.add(1);
 		lists.add(2);
 		lists.add(3);
-	}};
+	}
+	
 	static Scheduler scheduler = new Scheduler(lists,7);
+	private static ThirdSystem GUI2 = new ThirdSystem("Floor ");
+	static Floor floor = new Floor(100, GUI2);
 
-	static Floor floor = new Floor(100);
-
-	static Elevator elevator = new Elevator(1);
+	static Elevator elevator = new Elevator(1,GUI2);
 	
 	private FloorReceiver floorReceiver = floor.requestFloorReceiver();
 
 	private SchedulerReceiver schedulerReceiver = scheduler.requestSchedulerReceiver();
 	
-	private static Thread floorThread;
+	private static Thread floorThread = new Thread(floor, "Floor");
 
-	private static Thread schedulerThread;
+	private static Thread schedulerThread = new Thread(scheduler, "SchedulerTest");
 
 	
 	
 	public static void main(String[] args) {
 
-		floorThread = new Thread(floor, "Floor");
-		schedulerThread = new Thread(scheduler, "SchedulerTest");
-
-
+	
 		// starting the threads
 		floorThread.start();
 		schedulerThread.start();
@@ -59,20 +58,20 @@ public class ElevatorTest {
 	@Test
 	public void floorTest() {
 		floorReceiver.sendElevatorMessage(floorInfo);
-		assertEquals("Floor sent 14:05:15.0 2 UP 4 NONE to the scheduler", floorReceiver.getFloorTest1());
+		assertEquals("Floor sent 14:05:15.0 2 UP 4 NONE NO_MORE_REQUESTS to the scheduler", floorReceiver.getFloorTest1());
 
 	}
 	
 	@Test
 	public void schedulerTest1() {
-		assertEquals("14:05:15.0 2 UP 4 NONE", scheduler.getElevatorMessage());
+		assertEquals("14:05:15.0 2 UP 4 NONE NO_MORE_REQUESTS", scheduler.getElevatorMessage());
 	}
 	
 	
 	@Test
 	public void schedulerTest2() {
 		schedulerReceiver.sendElevatorMessage(floorInfo, 1);
-		assertEquals("Scheduler sent 14:05:15.0 2 UP 4 NONE to Elevator 1", schedulerReceiver.getSchedulerTest2());
+		assertEquals("Scheduler sent 14:05:15.0 2 UP 4 NONE NO_MORE_REQUESTS to Elevator 1", schedulerReceiver.getSchedulerTest2());
 	}
 	
 	@Test

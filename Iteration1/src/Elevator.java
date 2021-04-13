@@ -104,6 +104,7 @@ public class Elevator implements Runnable {
 	
 	private boolean arrivalFlag;
 	
+	private boolean emergencyFault;
 	/**
 	 * Elevator constructor takes in scheduler object and initializes the elevator
 	 * object
@@ -118,6 +119,7 @@ public class Elevator implements Runnable {
 		passengerDestinations = new ArrayList<>();
 		floorsToVisit = new HashSet<>();
 		floorsTravelledWithoutStopping = 0;
+		emergencyFault = false;
 		
 		door = new Door(this);
 		
@@ -382,182 +384,225 @@ public class Elevator implements Runnable {
 	}
 	
 	public void clearElevatorStatus(String state, String dir, int floorNum) {
-		System.out.println("hey " + currentState.toString());
 		switch(floorNum) {
 		case 1:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_45.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_23.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_23.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_45.setIcon(new ImageIcon());
 			}
 			break;
 		case 2:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_46.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_25.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_25.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_46.setIcon(new ImageIcon());
 			}
 			break;
 		case 3:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_47.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_26.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")){
 				GUI2.lblNewLabel_26.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_47.setIcon(new ImageIcon());
 			}
 			break;
 		case 4:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_48.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_27.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_27.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_48.setIcon(new ImageIcon());
 			}
 			break;
 		case 5:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_49.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_28.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_28.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_49.setIcon(new ImageIcon());
 			}
 			break;
 		case 6:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_50.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_29.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_29.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_50.setIcon(new ImageIcon());
 			}
 			break;
 		case 7:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_51.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_30.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_30.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_51.setIcon(new ImageIcon());
 			}
 			break;
 		case 8:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_52.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_31.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_31.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_52.setIcon(new ImageIcon());
 			}
 			break;
 		case 9:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_53.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_32.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_32.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_53.setIcon(new ImageIcon());
 			}
 			break;
 		case 10:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_54.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_33.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_33.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_54.setIcon(new ImageIcon());
 			}
 			break;
 		case 11:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_55.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_34.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_34.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_55.setIcon(new ImageIcon());
 			}
 			break;
 		case 12:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_56.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_24.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_24.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_56.setIcon(new ImageIcon());
 			}
 			break;
 		case 13:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_57.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_35.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_35.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_57.setIcon(new ImageIcon());
 			}
 			break;
 		case 14:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_58.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_36.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_36.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_58.setIcon(new ImageIcon());
 			}
 			break;
 		case 15:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_59.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_37.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_37.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_59.setIcon(new ImageIcon());
 			}
 			break;
 		case 16:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_60.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_38.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_38.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_60.setIcon(new ImageIcon());
 			}
 			break;
 		case 17:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_61.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_39.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_39.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_61.setIcon(new ImageIcon());
 			}
 			break;
 		case 18:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_62.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_40.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_40.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_62.setIcon(new ImageIcon());
 			}
 			break;
 		case 19:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_63.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_41.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_41.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_63.setIcon(new ImageIcon());
 			}
 			break;
 		case 20:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_64.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_42.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_42.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_64.setIcon(new ImageIcon());
 			}
 			break;
 		case 21:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_65.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_43.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_43.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_65.setIcon(new ImageIcon());
 			}
 			break;
 		case 22:
 			if(state.equals("STOPPED") && dir.equals("DOWN")) {
 				GUI2.lblNewLabel_66.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_44.setIcon(new ImageIcon());
 			}
 			else if (state.equals("STOPPED") && dir.equals("UP")) {
 				GUI2.lblNewLabel_44.setIcon(new ImageIcon());
+				GUI2.lblNewLabel_66.setIcon(new ImageIcon());
 			}
 			break;
 		}
@@ -647,7 +692,7 @@ public class Elevator implements Runnable {
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " has stopped at floor " + floor + "\n");
 					
-					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false, !floorsToVisit.isEmpty()));
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), currentState == ElevatorState.EMERGENCY, !floorsToVisit.isEmpty()));
 					
 					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
 					String GUIState = currentState.toString();
