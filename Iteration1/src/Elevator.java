@@ -27,6 +27,8 @@ public class Elevator implements Runnable {
 
 	private SecondSystem GUI;
 	
+	private ThirdSystem GUI2;
+	
 	private static final int LATENCY_TIME = 1000;
 	
 	private int port;
@@ -108,7 +110,7 @@ public class Elevator implements Runnable {
 	 * 
 	 * @param scheduler The scheduler responsible for giving this elevator requests
 	 */
-	public Elevator(int port) {
+	public Elevator(int port, ThirdSystem GUILamp) {
 		direction = ElevatorDirection.STOPPED;
 		floor = INITIAL_FLOOR;
 		currentState = ElevatorState.STOPPED;
@@ -124,9 +126,9 @@ public class Elevator implements Runnable {
 		motorFault = false;
 		openDoorFault = false;
 		closeDoorFault = false;
+		GUI2 = GUILamp;
 		
 		this.port = port;
-		
 		GUI = new SecondSystem(port+"");
 		GUI.setTitle("Elevator "+port);
 		GUI.setVisible(true);
@@ -218,6 +220,7 @@ public class Elevator implements Runnable {
 		}
 		return (int) (1000 * totalTime);
 	}
+	
 	
 	/**
 	 * Calculates the time that the elevator will take until it gets to the approach point of the next floor.
@@ -359,7 +362,7 @@ public class Elevator implements Runnable {
 	public void setElevatorStatus(String info, String State, String Direction) {
 		GUI.label2.setText(info);
 		String floor[] = info.split("");
-		GUI.label3.setText(floor[15]);
+		GUI.label3.setText(floor[15] + floor[16]);
 		if(State.equals("MOVING") && Direction.equals("UP")) {
 			GUI.lblNewLabel.setIcon(new ImageIcon("./elevatorIteration#5.jpg"));
 			GUI.label4.setIcon(new ImageIcon("./greenup.png"));
@@ -377,6 +380,124 @@ public class Elevator implements Runnable {
 			GUI.label4.setIcon(new ImageIcon("./warning.png"));
 		}
 	}
+	
+	public void clearElevatorStatus(String state, String dir, int floorNum) {
+		switch(floorNum) {
+		case 1:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_45.setIcon(new ImageIcon());
+			}
+			break;
+		case 2:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_46.setIcon(new ImageIcon());
+			}
+			break;
+		case 3:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_47.setIcon(new ImageIcon());
+			}
+			break;
+		case 4:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_48.setIcon(new ImageIcon());
+			}
+			break;
+		case 5:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_49.setIcon(new ImageIcon());
+			}
+			break;
+		case 6:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_50.setIcon(new ImageIcon());
+			}
+			break;
+		case 7:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_51.setIcon(new ImageIcon());
+			}
+			break;
+		case 8:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_52.setIcon(new ImageIcon());
+			}
+			break;
+		case 9:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_53.setIcon(new ImageIcon());
+			}
+			break;
+		case 10:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_54.setIcon(new ImageIcon());
+			}
+			break;
+		case 11:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_55.setIcon(new ImageIcon());
+			}
+			break;
+		case 12:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_56.setIcon(new ImageIcon());
+			}
+			break;
+		case 13:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_57.setIcon(new ImageIcon());
+			}
+			break;
+		case 14:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_58.setIcon(new ImageIcon());
+			}
+			break;
+		case 15:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_59.setIcon(new ImageIcon());
+			}
+			break;
+		case 16:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_60.setIcon(new ImageIcon());
+			}
+			break;
+		case 17:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_61.setIcon(new ImageIcon());
+			}
+			break;
+		case 18:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_62.setIcon(new ImageIcon());
+			}
+			break;
+		case 19:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_63.setIcon(new ImageIcon());
+			}
+			break;
+		case 20:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_64.setIcon(new ImageIcon());
+			}
+			break;
+		case 21:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_65.setIcon(new ImageIcon());
+			}
+			break;
+		case 22:
+			if(state.equals("STOPPED")) {
+				GUI2.lblNewLabel_66.setIcon(new ImageIcon());
+			}
+			break;
+			
+	
+	}
+	}
+	
 	
 	private void releasePassengers() {
 		
@@ -426,6 +547,7 @@ public class Elevator implements Runnable {
 						String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
 						String GUIState = currentState.toString();
 						String GUIDirection = direction.toString();
+						int floorNum = floor;
 						setElevatorStatus(GUIStatus, GUIState, GUIDirection);
 						
 						//tell the motor to move and wait
@@ -444,6 +566,7 @@ public class Elevator implements Runnable {
 					//not changing direction to stopped so that the elevator will remember which way it was going most recently
 					//direction = ElevatorDirection.STOPPED;
 					floorsTravelledWithoutStopping = 0;
+					clearElevatorStatus(currentState.toString(), direction.toString(), floor);
 					removeFloorToVisit(floor);
 					
 					//tell the scheduler that its stopping
