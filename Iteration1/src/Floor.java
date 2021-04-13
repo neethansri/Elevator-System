@@ -47,7 +47,8 @@ public class Floor implements Runnable {
 	@Override
 	public void run() {
 		readFile();
-		System.out.println("Input file has been fully read.\n");
+		System.out.println("Time: " + LocalTime.now());
+		System.out.println("Floor: Input file has been fully read.\n");
 		generateRequests();
 	}  	
 	

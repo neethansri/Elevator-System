@@ -26,6 +26,7 @@ public class Scheduler implements Runnable {
 	 * All the well-known port numbers of the elevators
 	 */
 	private ArrayList<Integer> numOfElevators = new ArrayList<>();
+
 	/**
 	 * The lowest floor that the elevators can service
 	 */
@@ -37,7 +38,15 @@ public class Scheduler implements Runnable {
 	
 	private static final int INVALID_ELEVATOR = -1;
 	
+	/**
+	 * True if the Floor subsystem will not send any more requests from the input file
+	 */
 	private boolean noMoreRequests;
+	
+	/**
+	 * The time when the Server processes the first request from the input file
+	 */
+	private LocalTime startTime;
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object
@@ -49,6 +58,10 @@ public class Scheduler implements Runnable {
 		numOfElevators = elevatorsList;
 		pendingRequests = new LinkedList<>();
 		topFloor = i;
+		
+		noMoreRequests = false;
+		
+		startTime = null;
 		
 		//initializes the map that keeps track of the elevators with the elevators' initial status
 		for(int port: numOfElevators) {
@@ -99,8 +112,30 @@ public class Scheduler implements Runnable {
 	 * @param port The port number of the elevator
 	 */
 	public void receiveElevatorUpdate(ElevatorUpdate eu, int port) {
+		
+		//replaces the stored status of the elevator with the incoming one
 		synchronized(elevators) {
 			elevators.replace(port, eu);
+		}
+		
+		//checks whether any elevators are currently servicing requests they have been sent
+		boolean allElevatorsDone = true;
+		for(ElevatorUpdate update: elevators.values()) {
+			if(update.hasRequests()) {
+				allElevatorsDone = false;
+				break;
+			}
+		}
+		
+		/*if there are no more incoming requests from the floor subsystem, 
+		 * and all the elevators are finished servicing their own requests,
+		 * then the completion time is printed to the console.
+		 */
+		if(allElevatorsDone && noMoreRequests) {
+			System.out.println("Time: " + LocalTime.now());
+			System.out.println("Scheduler: ALL REQUESTS HAVE BEEN SERVICED!\n");
+			
+			System.out.println("COMPLETION TIME = " + (LocalTime.now().toNanoOfDay() - startTime.toNanoOfDay())/1000000 + "ms\n");
 		}
 		
 		//passes the elevator update to the floor, so that the floor lamps can activate if an elevator is approaching
@@ -211,6 +246,16 @@ public class Scheduler implements Runnable {
 			//sends the request to the chosen elevator
 			receiver.sendElevatorMessage(em, chosenElevator);
 		}
+		
+		//if this is the first incoming request, the server will record the starting time
+		if(startTime == null) {
+			startTime = LocalTime.now();
+			System.out.println("Time: " + LocalTime.now());
+			System.out.println("Scheduler: THE FIRST REQUEST HAS ARRIVED!\n");
+		}
+		
+		//if indicated in the message, the server acknowledges that no more new requests will come from the floor subsystem
+		if(em.noMoreRequests()) noMoreRequests = true;
 	}
 	
 	/**
