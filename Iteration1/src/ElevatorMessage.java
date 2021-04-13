@@ -20,6 +20,7 @@ public class ElevatorMessage {
 	private int button;
 	private ElevatorDirection direction;
 	private Fault fault;
+	private boolean noMoreRequests;
 	
 	private static final int ELEVATOR_MESSAGE_SIGNATURE = 2;
 	public static final byte SPACER = 0;
@@ -32,12 +33,13 @@ public class ElevatorMessage {
 	 * @param dir the direction button that was pressed
 	 * @param button the car button that was pressed
 	 */
-	public ElevatorMessage(String time, int floor, String dir, int button, String f) {
+	public ElevatorMessage(String time, int floor, String dir, int button, String f, boolean noMoreRequests) {
 		this.time = time;
 		this.floor = floor;
 		this.button = button;
 		this.direction = convertDirection(dir);
 		this.fault = convertFault(f);
+		this.noMoreRequests = noMoreRequests;
 	}
 	
 	public ElevatorMessage(String time, int floor, ElevatorDirection dir, int button) {
@@ -45,7 +47,7 @@ public class ElevatorMessage {
 		this.floor = floor;
 		this.button = button;
 		this.direction = dir;
-
+		this.noMoreRequests = false;
 	}
 	
 	public ElevatorMessage(byte[] array) {
@@ -53,11 +55,12 @@ public class ElevatorMessage {
 		for(int i = 0; i < array.length; i++) {
 			if(array[i] == SPACER) spacerIndexes.add(i);
 		}
-		if(spacerIndexes.size() == 4) {
+		if(spacerIndexes.size() == 5) {
 			
 			floor = Integer.parseInt(new String(Arrays.copyOfRange(array, 1, spacerIndexes.get(0))));
 			button = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(0) + 1, spacerIndexes.get(1))));
 			direction = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(1) + 1, spacerIndexes.get(2)))) == 1? ElevatorDirection.UP: ElevatorDirection.DOWN;
+			
 			
 			//assigns the correct fault (if any) to happen when servicing the request
 			int faultInt = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(2) + 1, spacerIndexes.get(3))));
@@ -66,12 +69,22 @@ public class ElevatorMessage {
 			else if(faultInt == 3) fault = Fault.CLOSE_DOOR_FAULT;
 			else fault = Fault.NONE;
 			
-			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(3) + 1, array.length));
+			noMoreRequests = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(3) + 1, spacerIndexes.get(4)))) == 1? true: false;
+			
+			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(4) + 1, array.length));
 		}
 		else {
 			//invalid byte array
 			return;
 		}
+	}
+	
+	public void setNoMoreRequests() {
+		noMoreRequests = true;
+	}
+	
+	public boolean noMoreRequests() {
+		return noMoreRequests;
 	}
 
 	/**
@@ -162,7 +175,7 @@ public class ElevatorMessage {
 	 * @return the string representation of the object
 	 */
 	public String toString() {
-		return time + " " + floor + " " + direction + " " + button + " " + fault;
+		return time + " " + floor + " " + direction + " " + button + " " + fault + (noMoreRequests? " NO_MORE_REQUESTS": "");
 	}
 	
 	public byte[] toByteArray() {
@@ -177,6 +190,8 @@ public class ElevatorMessage {
 			stream.write(String.valueOf(direction == ElevatorDirection.UP? 1: -1).getBytes());
 			stream.write(SPACER);
 			stream.write(String.valueOf(faultToInt(fault)).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(noMoreRequests? 1: 0).getBytes());
 			stream.write(SPACER);
 			stream.write(time.getBytes());
 		} catch (IOException e) {
