@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import javax.swing.ImageIcon;
 /**
  * @author Solan Siva 101067491
  * @author Ben Baggs 101122318
@@ -12,7 +13,7 @@ import java.util.ArrayList;
  */
 public class Floor implements Runnable {
 
-	private ArrayList<ElevatorMessage> requests;
+	private ThirdSystem GUI2;
 	
 	private long earliestTime, currentTime;
 
@@ -23,10 +24,9 @@ public class Floor implements Runnable {
 	 * 
 	 * @param scheduler is of class Scheduler
 	 */
-	public Floor(int port) {
+	public Floor(int port, ThirdSystem GUILamp) {
 		
-		requests = new ArrayList<>();
-
+		GUI2 = GUILamp;
 		receiver = new FloorReceiver(this, port);
 		
 		Thread receiverThread = new Thread(receiver, "Floor Receiver");
@@ -88,6 +88,190 @@ public class Floor implements Runnable {
 		}
 	}
     
+	public void floorLamp(int data, String dir) {
+		switch(data) {
+			case 1:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_45.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_23.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 2:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_46.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_25.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 3:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_47.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_26.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 4:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_48.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_27.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 5:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_49.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_28.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 6:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_50.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_29.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 7:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_51.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_30.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 8:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_52.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_31.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 9:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_53.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_32.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 10:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_54.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_33.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 11:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_55.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_34.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 12:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_56.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_24.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 13:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_57.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_35.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 14:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_58.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_36.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 15:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_59.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_37.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 16:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_60.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_38.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 17:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_61.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_39.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 18:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_62.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_40.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 19:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_63.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_41.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 20:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_64.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_42.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 21:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_65.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_43.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+			case 22:
+				if(dir.equals("UP")) {
+					GUI2.lblNewLabel_66.setIcon(new ImageIcon("./greenup.png"));
+				}
+				else if(dir.equals("DOWN")) {
+					GUI2.lblNewLabel_44.setIcon(new ImageIcon("./down.png"));
+				}
+				break;
+				
+		
+		}
+		
+	}
+	
 	/**
 	 * void function used to parse the file with the events
 	 */
@@ -99,10 +283,8 @@ public class Floor implements Runnable {
 			Line = read.readLine();
 			while (Line != null) {
 				String[] data = Line.split(" "); // split each line by space and put it in a string array
-				
-				requests.add(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3]), data[4].toUpperCase()));
-				
-				
+				receiver.sendElevatorMessage(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3]), data[4].toUpperCase()));
+				floorLamp(Integer.parseInt(data[1]), data[2].toUpperCase());
 				Line = read.readLine(); // if multiple lines, set the next line
 			}
 		}

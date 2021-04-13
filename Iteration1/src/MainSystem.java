@@ -27,8 +27,12 @@ public class MainSystem extends JFrame {
 
 	private ArrayList<Integer> elevators = new ArrayList<>();
 	
+	
 	private void startElevatorSystem() {
 		chooseElevators();
+		ThirdSystem GUILamp = new ThirdSystem("Floor ");
+		GUILamp.setTitle("Floor ");
+		GUILamp.setVisible(true);
 		
 		System.out.println("Time: " + LocalTime.now());
 		System.out.println("Scheduler subsystem is starting!\n");
@@ -40,7 +44,7 @@ public class MainSystem extends JFrame {
 		System.out.println("Elevator subsystem is starting!\n");
 
 		for(Integer port: elevators) {
-			Thread elevatorThread = new Thread(new Elevator(port), "Elevator " + port);
+			Thread elevatorThread = new Thread(new Elevator(port, GUILamp), "Elevator " + port);
 			elevatorThread.start();
 		}
 		
@@ -48,7 +52,7 @@ public class MainSystem extends JFrame {
 		System.out.println("Floor subsystem is starting!\n");
 		
 		//creating a floor object
-		Thread floorThread = new Thread(new Floor(FLOOR_PORT), "Floor");
+		Thread floorThread = new Thread(new Floor(FLOOR_PORT, GUILamp), "Floor");
 		floorThread.start();
 		
 	}
