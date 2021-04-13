@@ -15,6 +15,8 @@ public class Floor implements Runnable {
 
 	private ThirdSystem GUI2;
 	
+	private ArrayList<ElevatorMessage> requests;
+	
 	private long earliestTime, currentTime;
 
 	private FloorReceiver receiver;
@@ -25,6 +27,8 @@ public class Floor implements Runnable {
 	 * @param scheduler is of class Scheduler
 	 */
 	public Floor(int port, ThirdSystem GUILamp) {
+		
+		requests = new ArrayList<>();
 		
 		GUI2 = GUILamp;
 		receiver = new FloorReceiver(this, port);
@@ -74,7 +78,12 @@ public class Floor implements Runnable {
 			
 			for(int i = 0; i < requests.size(); i++) {
 				if(currentTime >= requestTimes.get(i)) {
-					receiver.sendElevatorMessage(requests.get(i));
+					
+					ElevatorMessage em = requests.get(i);
+					
+					if(requests.size() == 1) em.setNoMoreRequests();
+					
+					receiver.sendElevatorMessage(em);
 					requests.remove(i);
 					requestTimes.remove(i);
 				}
@@ -283,7 +292,7 @@ public class Floor implements Runnable {
 			Line = read.readLine();
 			while (Line != null) {
 				String[] data = Line.split(" "); // split each line by space and put it in a string array
-				receiver.sendElevatorMessage(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3]), data[4].toUpperCase()));
+				requests.add(new ElevatorMessage(data[0], Integer.parseInt(data[1]), data[2].toUpperCase(),Integer.parseInt(data[3]), data[4].toUpperCase(), false));
 				floorLamp(Integer.parseInt(data[1]), data[2].toUpperCase());
 				Line = read.readLine(); // if multiple lines, set the next line
 			}

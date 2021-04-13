@@ -41,18 +41,21 @@ public class ElevatorUpdate{
 	
 	private int passengers;
 	
+	private boolean hasRequests;
+	
 	/**
 	 * Constructor of class ElevatorUpdate
 	 * @param floor The current floor of the elevator
 	 * @param direction The current direction of the elevator
 	 * @param time The time that the elevator sent the update
 	 */
-	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, String time, boolean emergency) {
+	public ElevatorUpdate(int floor, ElevatorDirection direction, int passengers, String time, boolean emergency, boolean hasRequests) {
 		this.floor = floor;
 		this.direction = direction;
 		this.time = time;
 		this.passengers = passengers;
 		this.emergency = emergency;
+		this.hasRequests = hasRequests;
 	}
 	
 	public ElevatorUpdate(byte[] array) {
@@ -60,12 +63,13 @@ public class ElevatorUpdate{
 		for(int i = 0; i < array.length; i++) {
 			if(array[i] == SPACER) spacerIndexes.add(i);
 		}
-		if(spacerIndexes.size() == 4) {
+		if(spacerIndexes.size() == 5) {
 			floor = Integer.parseInt(new String(Arrays.copyOfRange(array, 1, spacerIndexes.get(0))));
 			passengers = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(0) + 1, spacerIndexes.get(1))));
 			direction = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(1) + 1, spacerIndexes.get(2)))) == 1? ElevatorDirection.UP: ElevatorDirection.DOWN;
 			emergency = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(2) + 1, spacerIndexes.get(3)))) == 1? true: false;
-			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(3) + 1, array.length));
+			hasRequests = Integer.parseInt(new String(Arrays.copyOfRange(array, spacerIndexes.get(3) + 1, spacerIndexes.get(4)))) == 1? true: false;
+			time = new String(Arrays.copyOfRange(array, spacerIndexes.get(4) + 1, array.length));
 		}
 		else {
 			//invalid byte array
@@ -74,7 +78,7 @@ public class ElevatorUpdate{
 	}
 	
 	public static ElevatorUpdate initialStatus() {
-		return new ElevatorUpdate(INITIAL_FLOOR, ElevatorDirection.STOPPED, 0, LocalTime.now().toString(), false);
+		return new ElevatorUpdate(INITIAL_FLOOR, ElevatorDirection.STOPPED, 0, LocalTime.now().toString(), false, false);
 	}
 
 	/**
@@ -109,11 +113,15 @@ public class ElevatorUpdate{
 		return emergency;
 	}
 	
+	public boolean hasRequests() {
+		return hasRequests;
+	}
+	
 	/**
 	 * formats the contents of the message as a string
 	 */
 	public String toString() {
-		return "(Time: "+ time + ", Floor: " + floor + ", # of Passengers: " + passengers + ", Direction: " + direction + ", Emergency?: " + emergency + ")";
+		return "(Time: "+ time + ", Floor: " + floor + ", # of Passengers: " + passengers + ", Direction: " + direction + ", Emergency?: " + emergency + ", Has Requests: " + hasRequests + ")";
 	}
 	
 	public byte[] toByteArray() {
@@ -127,6 +135,8 @@ public class ElevatorUpdate{
 			stream.write(String.valueOf(direction == ElevatorDirection.UP? 1: -1).getBytes());
 			stream.write(SPACER);
 			stream.write(String.valueOf(emergency? 1: 0).getBytes());
+			stream.write(SPACER);
+			stream.write(String.valueOf(hasRequests? 1: 0).getBytes());
 			stream.write(SPACER);
 			stream.write(time.getBytes());
 		} catch (IOException e) {

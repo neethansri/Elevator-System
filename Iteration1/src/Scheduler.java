@@ -36,6 +36,8 @@ public class Scheduler implements Runnable {
 	private int topFloor;
 	
 	private static final int INVALID_ELEVATOR = -1;
+	
+	private boolean noMoreRequests;
 
 	/**
 	 * constructor for Scheduler to initialize scheduler object

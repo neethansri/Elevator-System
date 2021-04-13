@@ -182,7 +182,7 @@ public class Elevator implements Runnable {
 		
 		//disable the elevator and notify the scheduler
 		setState(ElevatorState.EMERGENCY);
-		receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), true));
+		receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), true, !floorsToVisit.isEmpty()));
 	}
 
 	public ElevatorReceiver requestElevatorReceiver() {
@@ -542,7 +542,7 @@ public class Elevator implements Runnable {
 						System.out.println(Thread.currentThread().getName() + " is starting to move towards floor " + floor + "\n");
 						
 						//tell the scheduler that its moving
-						receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
+						receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false, !floorsToVisit.isEmpty()));
 						
 						String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
 						String GUIState = currentState.toString();
@@ -567,16 +567,21 @@ public class Elevator implements Runnable {
 					//direction = ElevatorDirection.STOPPED;
 					floorsTravelledWithoutStopping = 0;
 					clearElevatorStatus(currentState.toString(), direction.toString(), floor);
+					
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false, !floorsToVisit.isEmpty()));
+					
 					removeFloorToVisit(floor);
 					
 					//tell the scheduler that its stopping
-					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
+					//receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false, true));
 					
 					//tell the motor to move and wait
 					waitForMotor(timeToDecelerate(floorsTravelledWithoutStopping));
 					
 					System.out.println("Time: " + LocalTime.now());
 					System.out.println(Thread.currentThread().getName() + " has stopped at floor " + floor + "\n");
+					
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false, !floorsToVisit.isEmpty()));
 					
 					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
 					String GUIState = currentState.toString();
@@ -605,7 +610,7 @@ public class Elevator implements Runnable {
 					floorsTravelledWithoutStopping++;
 					
 					//tell the scheduler that its continuing
-					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false));
+					receiver.sendElevatorUpdate(new ElevatorUpdate(floor, direction, passengerDestinations.size(), LocalTime.now().toString(), false, !floorsToVisit.isEmpty()));
 					
 					String GUIStatus = "Current Floor: "+floor +" "+ "Direction: "+direction.toString() +" "+ "Current State: " + currentState.toString();
 					String GUIState = currentState.toString();
